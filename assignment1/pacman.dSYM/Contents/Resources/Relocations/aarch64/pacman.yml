@@ -1,0 +1,29 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/caiyilin/Desktop/working/UNSW/assignment1/pacman'
+relocations:
+  - { offsetInCU: 0x26, offset: 0x26, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x10000332C, symSize: 0x78 }
+  - { offsetInCU: 0x3F, offset: 0x3F, size: 0x8, addend: 0x0, symName: _map, symObjAddr: 0xA78, symBinAddr: 0x100008000, symSize: 0x0 }
+  - { offsetInCU: 0x74, offset: 0x74, size: 0x8, addend: 0x0, symName: _ghosts, symObjAddr: 0xAFC, symBinAddr: 0x100008084, symSize: 0x0 }
+  - { offsetInCU: 0xC9, offset: 0xC9, size: 0x8, addend: 0x0, symName: _player_x, symObjAddr: 0xB20, symBinAddr: 0x1000080A8, symSize: 0x0 }
+  - { offsetInCU: 0xDE, offset: 0xDE, size: 0x8, addend: 0x0, symName: _player_y, symObjAddr: 0xB24, symBinAddr: 0x1000080AC, symSize: 0x0 }
+  - { offsetInCU: 0xF3, offset: 0xF3, size: 0x8, addend: 0x0, symName: _dots_collected, symObjAddr: 0x235C, symBinAddr: 0x1000080B0, symSize: 0x0 }
+  - { offsetInCU: 0x108, offset: 0x108, size: 0x8, addend: 0x0, symName: _map_copy, symBinAddr: 0x1000080B8, symSize: 0x0 }
+  - { offsetInCU: 0x11D, offset: 0x11D, size: 0x8, addend: 0x0, symName: _valid_directions, symBinAddr: 0x10000813C, symSize: 0x0 }
+  - { offsetInCU: 0x13E, offset: 0x13E, size: 0x8, addend: 0x0, symName: _x_copy, symBinAddr: 0x10000814C, symSize: 0x0 }
+  - { offsetInCU: 0x153, offset: 0x153, size: 0x8, addend: 0x0, symName: _y_copy, symBinAddr: 0x100008150, symSize: 0x0 }
+  - { offsetInCU: 0x168, offset: 0x168, size: 0x8, addend: 0x0, symName: _lfsr_state, symBinAddr: 0x1000080B4, symSize: 0x0 }
+  - { offsetInCU: 0x183, offset: 0x183, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x10000332C, symSize: 0x78 }
+  - { offsetInCU: 0x19C, offset: 0x19C, size: 0x8, addend: 0x0, symName: _get_seed, symObjAddr: 0x78, symBinAddr: 0x1000033A4, symSize: 0x74 }
+  - { offsetInCU: 0x1B2, offset: 0x1B2, size: 0x8, addend: 0x0, symName: _print_welcome, symObjAddr: 0xEC, symBinAddr: 0x100003418, symSize: 0xA8 }
+  - { offsetInCU: 0x1C7, offset: 0x1C7, size: 0x8, addend: 0x0, symName: _print_map, symObjAddr: 0x194, symBinAddr: 0x1000034C0, symSize: 0x15C }
+  - { offsetInCU: 0x231, offset: 0x231, size: 0x8, addend: 0x0, symName: _play_tick, symObjAddr: 0x2F0, symBinAddr: 0x10000361C, symSize: 0x94 }
+  - { offsetInCU: 0x259, offset: 0x259, size: 0x8, addend: 0x0, symName: _copy_map, symObjAddr: 0x384, symBinAddr: 0x1000036B0, symSize: 0xB0 }
+  - { offsetInCU: 0x2C3, offset: 0x2C3, size: 0x8, addend: 0x0, symName: _try_move, symObjAddr: 0x434, symBinAddr: 0x100003760, symSize: 0x12C }
+  - { offsetInCU: 0x329, offset: 0x329, size: 0x8, addend: 0x0, symName: _get_direction, symObjAddr: 0x560, symBinAddr: 0x10000388C, symSize: 0xD8 }
+  - { offsetInCU: 0x361, offset: 0x361, size: 0x8, addend: 0x0, symName: _check_ghost_collision, symObjAddr: 0x638, symBinAddr: 0x100003964, symSize: 0xD0 }
+  - { offsetInCU: 0x399, offset: 0x399, size: 0x8, addend: 0x0, symName: _do_ghost_logic, symObjAddr: 0x708, symBinAddr: 0x100003A34, symSize: 0x188 }
+  - { offsetInCU: 0x407, offset: 0x407, size: 0x8, addend: 0x0, symName: _collect_dot_and_check_win, symObjAddr: 0x890, symBinAddr: 0x100003BBC, symSize: 0xBC }
+  - { offsetInCU: 0x440, offset: 0x440, size: 0x8, addend: 0x0, symName: _get_valid_directions, symObjAddr: 0x94C, symBinAddr: 0x100003C78, symSize: 0xB4 }
+  - { offsetInCU: 0x4B4, offset: 0x4B4, size: 0x8, addend: 0x0, symName: _random_number, symObjAddr: 0xA00, symBinAddr: 0x100003D2C, symSize: 0x78 }
+...

@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/caiyilin/Desktop/working/UNSW/assignment1",
+      "program": "/Users/caiyilin/Desktop/working/UNSW/assignment1/build/Debug/outDebug"
+    }
+  ]
+}

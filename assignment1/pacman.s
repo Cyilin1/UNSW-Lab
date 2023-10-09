@@ -273,7 +273,7 @@ main__prologue:
 	# jal get_seed
 
 	jal print_welcome
-
+    jal print_map
 main__body:
 	# TODO: put your body for main here
 
@@ -362,37 +362,79 @@ get_direction__epilogue:
 
 
 ################################################################################
-# .TEXT <play_tick>
-	.text
+# .TEXT section
+.text
 play_tick:
-	# Subset:   1
-	#
-	# Args:
-	#    - $a0: int *dots_collected
-	#
-	# Returns:
-	#    - $v0: int
-	#
-	# Frame:    [...]
-	# Uses:     [...]
-	# Clobbers: [...]
-	#
-	# Locals:
-	#   - ...
-	#
-	# Structure:
-	#   play_tick
-	#   -> [prologue]
-	#       -> body
-	#   -> [epilogue]
+    # Subset: 1
+    #
+    # Args:
+    #    - $a0: int *dots_collected
+    #
+    # Returns:
+    #    - $v0: int
+    #
+    # Frame:    [...]
+    # Uses:     [...]
+    # Clobbers: [...]
+    #
+    # Locals:
+    #   - $t0: int* (player_x)
+    #   - $t1: int* (player_y)
+    #   - $t2: int (direction)
+    #   - $t3: int (result)
+    #   - $t4: int (temporary)
+    #   - $s0: int* (dots_collected)
 
-play_tick__prologue:
+    # Save the address of dots_collected in $s0
+    move $s0, $a0
 
-play_tick__body:
+    # Load player_x address into $t0
+    la $t0, player_x
+
+    # Load player_y address into $t1
+    la $t1, player_y
+
+    # Ask the player which direction to move
+    jal get_direction
+
+    # Store the result (direction) in $t2
+    move $t2, $v0
+
+    # Try to move the player in that direction
+    move $a0, $t0         # x coordinate (address)
+    move $a1, $t1         # y coordinate (address)
+    move $a2, $t2         # direction
+    jal try_move
+
+    # Check for ghost collision
+    jal check_ghost_collision
+    bnez $v0, play_tick__epilogue  # 不等于0就结束
+
+    # Do ghost logic
+    jal do_ghost_logic
+
+    # Check for ghost collision again
+    jal check_ghost_collision
+    bnez $v0, play_tick__epilogue  # 不等于0就结束
+
+    # Check whether the player has collected all the dots
+    move $a0, $s0         # Pass the address of dots_collected
+    jal collect_dot_and_check_win
+    bnez $v0, play_tick__epilogue  # If collect_dot_and_check_win returns FALSE, jump to game_over
+
+    # Return TRUE (continue playing)
+    li $v0, TRUE
+    j exit
 
 play_tick__epilogue:
-	jr	$ra
+    # Handle game over condition
+    # Print a message and set $v0 to FALSE
+    li $v0, FALSE
+    j exit
 
+exit:
+    # Return from the function
+    jr $ra
 
 ################################################################################
 # .TEXT <copy_map>
@@ -435,10 +477,6 @@ copy_map_inner_loop:
     # Check if j >= MAP_WIDTH, if true, exit inner loop
     bge $t1, MAP_WIDTH, copy_map_outer_loop_end
 
-    # Calculate array indices for src and dst
-    mul $t2, $t0, MAP_WIDTH    # Calculate offset for row
-    add $t2, $t2, $t1         # Add column offset
-
     # Load a character from src[i][j]
     lb $t3, ($a1)             # Load src[i][j] into $t3
 
@@ -457,13 +495,6 @@ copy_map_inner_loop:
 copy_map_outer_loop_end:
     # Increment i
     addi $t0, $t0, 1
-
-    # Calculate offsets for the next row in src and dst
-    li $t1, MAP_WIDTH         # Set j = MAP_WIDTH
-    mul $t1, $t1, $t0         # Calculate offset for row
-    sub $a0, $a0, $t1         # Decrement dst pointer
-    sub $a1, $a1, $t1         # Decrement src pointer
-
     j copy_map_outer_loop
 
 copy_map__epilogue:
@@ -553,88 +584,115 @@ get_valid_directions__epilogue:
 
 ################################################################################
 # .TEXT <print_map>
-    .text
+.text
 print_map:
-    # Subset:   2
+    # Subset: 2
     #
-    # Args:     void
+    # Args: void
     #
-    # Returns:  void
+    # Returns: void
     #
-    # Frame:    [...]
-    # Uses:     $t0 (i), $t1 (j), $t2 (temp), $t3 (map_char), $s0 (map_copy pointer)
-    # Clobbers: $t0, $t1, $t2, $t3, $s0
+    # Frame: [...]
+    # Uses: $t0, $t1, $t2, $t3, $t4, $t5, $t6, $t7, $s0, $s1, $s2, $s3, $s4
+    # Clobbers: $a0, $a1, $a2, $v0
     #
     # Locals:
-    #   - $t4 (row_offset), $t5 (col_offset), $t6 (row_address)
-    #
-    # Structure:
-    #   print_map
-    #   -> [prologue]
-    #       -> body
-    #   -> [epilogue]
+    #   - ...
+    push $ra
+    la $a0, map_copy
+    la $a1, map
+    jal copy_map
 
-print_map__prologue:
-    # Prologue code here (if needed)
-    li $t0, 0
-    li $t1, 0
+    # Mark the player's position
+    lw $t2, player_x      # Load player_x into $t2
+    lw $t3, player_y      # Load player_y into $t3
+    mul $t4, $t3, MAP_WIDTH # Calculate row offset
+    add $t4, $t4, $t2     # Calculate offset for player's position
+    la $t5, map_copy      # Load the base address of map_copy
+    add $t5, $t5, $t4     # Calculate address of player's position in map_copy
+    li $t6, PLAYER_CHAR   # Load PLAYER_CHAR into $t6
+    sb $t6, 0($t5)        # Mark player's position in map_copy
 
-    # Calculate row offset for map_copy
-    li $t4, MAP_WIDTH
-    mul $t4, $t4, $t0
+    # NOTE: We don't need to implement the loop for placing ghosts (Subset 3).
+    # Initialize loop counter
+    li $t0, 0            # $t0 = i
 
-    # Load the address of map_copy[i] into $s0
-    la $s0, map_copy
-    add $t6, $s0, $t4  # Calculate row address
+    # Loop through ghosts
+for_loop:
+    # Check if i >= NUM_GHOSTS, if so, exit the loop
+    bge $t0, NUM_GHOSTS, end_for_loop
 
-print_map__body:
-    # Load a character from map_copy[i][j] into $t3
-    lb $t3, ($t6)
+    # Load ghosts[i] address into $t1
+    la $t1, ghosts      # $t1 = address of ghosts
+    mul $t7, $t0, 12    # Each ghost entry is 12 bytes (3 words)
+    add $t1, $t1, $t7   # $t1 = address of ghosts[i]
 
-    # Print the character
-    li $v0, 11
-    move $a0, $t3
-    syscall
+    # Load ghosts[i].x into $t2
+    lw $t2, 0($t1)      # $t2 = ghosts[i].x
 
-    # Increment j
-    addi $t1, $t1, 1
+    # Load ghosts[i].y into $t3
+    lw $t3, 4($t1)      # $t3 = ghosts[i].y
 
-    # Check if j >= MAP_WIDTH, if true, exit inner loop
-    bge $t1, MAP_WIDTH, print_map__inner_loop_end
+    # Calculate map_copy index
+    mul $t4, $t3, MAP_WIDTH  # $t4 = row offset
+    add $t4, $t4, $t2       # $t4 = offset for map_copy[row][col]
 
-    # Increment $t6 to point to the next column
-    addi $t6, $t6, 1
+    # Load GHOST_CHAR into $t5
+    li $t5, GHOST_CHAR
 
-    j print_map__body
+    # Store GHOST_CHAR in map_copy[row][col]
+    la $t6, map_copy    # $t6 = address of map_copy
+    add $t6, $t6, $t4   # $t6 = address of map_copy[row][col]
+    sb $t5, 0($t6)
 
-print_map__inner_loop_end:
-    # Print a newline character to move to the next row
-    li $v0, 11
-    li $a0, '\n'
-    syscall
-
-    # Increment i
+    # Increment loop counter (i)
     addi $t0, $t0, 1
 
-    # Check if i >= MAP_HEIGHT, if true, exit outer loop
-    bge $t0, MAP_HEIGHT, print_map__epilogue
+    # Repeat the loop
+    j for_loop
 
-    # Calculate row offset for map_copy
-    li $t4, MAP_WIDTH
-    mul $t4, $t4, $t0
+end_for_loop:
 
-    # Update $t6 to point to the next row
-    add $t6, $s0, $t4
 
-    # Reset j to 0 for the next row
-    li $t1, 0
+    # Print the map
+    li $t0, 0             # $t0 = 0 (row index)
+outer_loop:
+    bge $t0, MAP_HEIGHT, print_map__done  # Exit the outer loop if row >= MAP_HEIGHT
 
-    j print_map__body
+    li $t1, 0             # $t1 = 0 (column index)
+inner_loop:
+    bge $t1, MAP_WIDTH, inner_loop__done  # Exit the inner loop if col >= MAP_WIDTH
 
-print_map__epilogue:
-    # Epilogue code here (if needed)
+    # Load map_copy[i][j] into $t7
+    mul $t2, $t0, MAP_WIDTH   # Calculate row offset
+    add $t2, $t2, $t1         # Calculate offset for map_copy[i][j]
+    la $t5, map_copy              # Load the base address of map_copy
+    add $t5, $t5, $t2         # Calculate address of map_copy[i][j]
+    lb $t7, 0($t5)            # Load map_copy[i][j] into $t7
 
+    # Print map_copy[i][j]
+    move $a0, $t7             # Pass map_copy[i][j] to print_char
+    li $v0, 11                 # Set syscall code for printing a character
+    syscall
+
+    # Increment column index
+    addi $t1, $t1, 1
+    j inner_loop
+
+inner_loop__done:
+    # Print a newline character
+    li $a0, '\n'
+    li $v0, 11                  # Set syscall code for printing a character
+    syscall
+
+    # Increment row index
+    addi $t0, $t0, 1
+    j outer_loop
+
+print_map__done:
+    pop $ra
     jr $ra
+
 
 
 ################################################################################
@@ -767,7 +825,7 @@ loop_check_ghosts:
     lw $t3, player_x
     lw $t4, ghosts($t2)
     lw $t5, player_y
-	lw $t6, ghosts($t2+4)
+	# lw $t6, ghosts($t2+4)
 
     beq $t3, $t4, x_collision
     beq $t5, $t6, y_collision
@@ -805,35 +863,94 @@ check_ghost_collision__epilogue:
 
 ################################################################################
 # .TEXT <collect_dot_and_check_win>
-	.text
+.text
 collect_dot_and_check_win:
-	# Subset:   3
-	#
-	# Args:
-	#    - $a0: int *dots_collected
-	#
-	# Returns:
-	#    - $v0: int
-	#
-	# Frame:    [...]
-	# Uses:     [...]
-	# Clobbers: [...]
-	#
-	# Locals:
-	#   - ...
-	#
-	# Structure:
-	#   collect_dot_and_check_win
-	#   -> [prologue]
-	#       -> body
-	#   -> [epilogue]
+    # Subset:   3
+    #
+    # Args:
+    #    - $a0: int *dots_collected
+    #
+    # Returns:
+    #    - $v0: int
+    #
+    # Frame:    [...]
+    # Uses:     $t0, $t1, $t2, $t3
+    # Clobbers: [...]
+    #
+    # Locals:
+    #   - ...
+    #
+    # Structure:
+    #   collect_dot_and_check_win
+    #   -> [prologue]
+    #       -> body
+    #   -> [epilogue]
 
 collect_dot_and_check_win__prologue:
+    # Save callee-saved registers
+    addi $sp, $sp, -4
+    sw $t0, 0($sp)
+    addi $sp, $sp, -4
+    sw $t1, 0($sp)
+    addi $sp, $sp, -4
+    sw $t2, 0($sp)
+    addi $sp, $sp, -4
+    sw $t3, 0($sp)
 
 collect_dot_and_check_win__body:
+    # Check whether the player is on top of a dot
+    # Load the address of map[player_y][player_x] into $t0
+    li $t1, MAP_WIDTH         # Set $t1 = MAP_WIDTH
+    mul $t2, $t1, $s1         # Calculate offset for row (player_y * MAP_WIDTH)
+    add $t0, $s0, $t2         # $t0 = &map[player_y][0]
+    add $t0, $t0, $s2         # $t0 = &map[player_y][player_x]
+    lb $t3, 0($t0)           # Load map_char from map into $t3
+
+    # Check if the player is on a dot
+    li $t1, DOT_CHAR
+    beq $t3, $t1, collect_dot_and_check_win__collect_dot
+
+    # If not on a dot, return FALSE
+    li $v0, FALSE
+    j collect_dot_and_check_win__epilogue
+
+collect_dot_and_check_win__collect_dot:
+    # Remove the dot from the map and increment count
+    li $t1, EMPTY_CHAR
+    sb $t1, 0($t0)           # Set map[player_y][player_x] = EMPTY_CHAR
+
+    # Increment the dots_collected
+    lw $t1, 0($a0)
+    addi $t1, $t1, 1
+    sw $t1, 0($a0)
+
+    # Check if all dots are collected
+    li $t2, MAP_DOTS
+    beq $t1, $t2, collect_dot_and_check_win__win
+
+    # If not all dots are collected, return FALSE
+    li $v0, FALSE
+    j collect_dot_and_check_win__epilogue
+
+collect_dot_and_check_win__win:
+    # Print win message and return TRUE
+    li $v0, TRUE
+    la $a0, game_won_msg
+    li $v0, 4
+    syscall
 
 collect_dot_and_check_win__epilogue:
-	jr	$ra
+    # Restore callee-saved registers
+    lw $t3, 0($sp)
+    addi $sp, $sp, 4
+    lw $t2, 0($sp)
+    addi $sp, $sp, 4
+    lw $t1, 0($sp)
+    addi $sp, $sp, 4
+    lw $t0, 0($sp)
+    addi $sp, $sp, 4
+    jr $ra
+
 
 
 ################################################################################
@@ -847,11 +964,18 @@ do_ghost_logic:
 	# Returns:  void
 	#
 	# Frame:    [...]
-	# Uses:     [...]
-	# Clobbers: [...]
+	# Uses:     $t0, $t1, $t2, $t3, $t4, $t5, $t6, $s0, $s1, $s2, $s3
+	# Clobbers: $t0, $t1, $t2, $t3, $t4, $t5, $t6, $s0, $s1, $s2, $s3
 	#
 	# Locals:
-	#   - ...
+	#   - ghost_id ($t0)
+	#   - n_valid_dirs ($t1)
+	#   - dir_index ($t2)
+	#   - temp_x ($t3)
+	#   - temp_y ($t4)
+	#   - decision_point ($t5)
+	#   - rand_num ($t6)
+	#   - tmp ($t7)
 	#
 	# Structure:
 	#   do_ghost_logic
@@ -860,11 +984,92 @@ do_ghost_logic:
 	#   -> [epilogue]
 
 do_ghost_logic__prologue:
+	# Save registers that need to be preserved
+	addi $sp, $sp, -12   # Allocate space on the stack
+	sw $t0, 0($sp)       # Save $t0
+	sw $t1, 4($sp)       # Save $t1
+	sw $t2, 8($sp)       # Save $t2
+
+	li $t0, 0
+	la $s2, valid_directions
+	la $s3, ghosts
 
 do_ghost_logic__body:
+	# Check if ghost_id >= NUM_GHOSTS
+	bge $t0, NUM_GHOSTS, do_ghost_logic__epilogue
+
+	# Load ghosts[ghost_id].x into temp_x
+	lw $t3, 0($s3)  # $s3 points to ghosts[ghost_id].x
+
+	# Load ghosts[ghost_id].y into temp_y
+	lw $t4, 4($s3)  # Offset 4 bytes to access y coordinate
+
+	# Get valid directions and store the count in n_valid_dirs
+	move $a0, $t3         # x coordinate
+	move $a1, $t4         # y coordinate
+    move $a2, $s2         # dir_array (valid_directions)
+	jal get_valid_directions
+	move $t1, $v0         # n_valid_dirs = return value
+
+	# Check if n_valid_dirs == 0
+	beqz $t1, continue_loop
+
+	# Calculate decision point condition
+	li $t5, 2             # Decision point threshold
+	bgt $t1, $t5, not_decision_point
+
+	# Check if the ghost can move in its current direction
+	move $a0, $t3         # x coordinate
+	move $a0, $s3         # x coordinate
+	move $a1, $t4         # y coordinate
+	# move $a1, $s3+4         # y coordinate
+	move $a2, $t2         # direction
+	jal try_move
+	beqz $v0, not_decision_point
+
+	# Ghost is not at a decision point
+	b continue_loop
+
+not_decision_point:
+	# Generate a random number (rand_num = random_number() % n_valid_dirs)
+	move $a0, $t1         # n_valid_dirs
+	jal random_number
+	move $t6, $v0
+
+	# Calculate dir_index (dir_index = rand_num % n_valid_dirs)
+	move $t7, $t1         # n_valid_dirs
+	remu $t2, $t6, $t7    # dir_index = rand_num % n_valid_dirs
+
+	# Load valid_directions[dir_index] into ghosts[ghost_id].direction
+	sll $t2, $t2, 2
+    add $t2, $t2, $s2     # Address of valid_directions[dir_index]
+	lw $t7, 0($t2)        # Load new valid direction
+    addi $s3, $s3, 12      # Move s3 to the next ghosts element (each element is 12 bytes)
+	sw $t7, 8($s3)        # Store it in ghosts[ghost_id].direction
+
+	# Try to move the ghost with the new direction
+	move $a0, $t3         # x coordinate
+	move $a0, $s3         # x coordinate
+	move $a1, $t4         # y coordinate
+    # move $a1, $s3+4         # y coordinate
+	move $a2, $t7         # new ghosts[ghost_id].direction
+	jal try_move
+
+continue_loop:
+	# Increment ghost_id
+	addi $t0, $t0, 1
+	# Repeat the loop
+	j do_ghost_logic__body
 
 do_ghost_logic__epilogue:
-	jr	$ra
+	# Restore registers
+	lw $t0, 0($sp)       # Restore $t0
+	lw $t1, 4($sp)       # Restore $t1
+	lw $t2, 8($sp)       # Restore $t2
+	addi $sp, $sp, 12    # Deallocate space on the stack
+
+	# Return from function
+	jr $ra
 
 
 ################################################################################

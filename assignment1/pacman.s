@@ -245,42 +245,62 @@ print_welcome__epilogue:
 
 
 ################################################################################
-# .TEXT <main>
-	.text
+# .TEXT
+    .text
 main:
-	# Subset:   1
-	#
-	# Args:     void
-	#
-	# Returns:
-	#    - $v0: int
-	#
-	# Frame:    [...]
-	# Uses:     [...]
-	# Clobbers: [...]
-	#
-	# Locals:
-	#   - ...
-	#
-	# Structure:
-	#   main
-	#   -> [prologue]
-	#       -> body
-	#   -> [epilogue]
+    # Subset:   1
+    #
+    # Args:     void
+    #
+    # Returns:  int
+    #
+    # Frame:    [...]
+    # Uses:     $t0, $t1, $t2, $t3, $t4, $t5, $t6, $t7, $s0, $s1, $s2, $s3, $s4
+    # Clobbers: $a0, $a1, $a2, $v0
+    #
+    # Locals:
+    #   - ...
 
-main__prologue:
-	# TODO: put your prologue for main here
-	# jal get_seed
+    jal get_seed
+    jal print_welcome
 
-	jal print_welcome
+main__loop:
     jal print_map
-main__body:
-	# TODO: put your body for main here
 
-main__epilogue:
-	# TODO: put your epilogue for main here
+    # Print dots_collected
+    li $v0, 11
+    lw $a0, dots_collected_msg_1
+    syscall
 
-	jr	$ra
+    # Print total dots
+    li $v0, 1
+    lw $a0, dots_collected
+    syscall
+
+    li $v0, 11
+    li $v0, dots_collected_msg_2
+    syscall
+
+    li $v0, 1
+    lw $a0, MAP_DOTS
+    syscall
+
+    li $v0, 11
+    li $v0, dots_collected_msg_3
+    syscall
+
+    # Call play_tick
+    la $a0, dots_collected
+    jal play_tick
+
+    # Check play_tick return value
+    bnez $v0, main__loop  # If play_tick returns non-zero, continue loop
+
+main__exit:
+    # Exit program
+    li $v0, 10
+    syscall
+
 
 
 ################################################################################

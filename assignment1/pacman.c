@@ -346,7 +346,7 @@ void do_ghost_logic(void) {
 int check_ghost_collision(void) {
     for (int i = 0; i < NUM_GHOSTS; i++) {
         if (player_x == ghosts[i].x && player_y == ghosts[i].y) {
-            printf("You ran into a ghost, game over! :(\n");
+            printf("You raµn into a ghost, game over! :(\n");
             return TRUE;
         }
     }

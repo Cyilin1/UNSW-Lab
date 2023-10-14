@@ -153,20 +153,20 @@ game_won_msg:
 # and check these boxes as you finish implementing each function.
 #
 #  SUBSET 0
-#  - [ ] print_welcome
+#  - [1] print_welcome
 #  SUBSET 1
-#  - [ ] main
-#  - [ ] get_direction
-#  - [ ] play_tick
+#  - [1] main
+#  - [1] get_direction
+#  - [1] play_tick
 #  SUBSET 2
-#  - [ ] copy_map
-#  - [ ] get_valid_directions
-#  - [ ] print_map
-#  - [ ] try_move
+#  - [1] copy_map
+#  - [1] get_valid_directions
+#  - [1] print_map
+#  - [1] try_move
 #  SUBSET 3
-#  - [ ] check_ghost_collision
-#  - [ ] collect_dot_and_check_win
-#  - [ ] do_ghost_logic
+#  - [1] check_ghost_collision
+#  - [1] collect_dot_and_check_win
+#  - [1] do_ghost_logic
 #     (and also the ghosts part of print_map)
 #  PROVIDED
 #  - [X] get_seed
@@ -175,13 +175,97 @@ game_won_msg:
 
 ################################################################################
 # .TEXT <print_welcome>
-	.text
+    .text
 print_welcome:
-	# Subset:   0
+    # Subset:   0
+    #
+    # Args:     void
+    #
+    # Returns:  void
+    #
+    # Frame:    [...]
+    # Uses:     [...]
+    # Clobbers: [...]
+    #
+    # Locals:
+    #   - ...
+    #
+    # Structure:
+    #   print_welcome
+    #   -> [prologue]
+    #       -> body
+    #   -> [epilogue]
+
+print_welcome__prologue:
+
+print_welcome__body:
+    # TODO: put your implementation of print_welcome here
+    
+    li $v0, 4
+    la $a0, welcome_msg
+    syscall
+
+    li $v0, 11
+    li $a0, WALL_CHAR
+    syscall
+
+    li $v0, 4
+    la $a0, welcome_msg_wall
+    syscall
+
+    li $v0, 11
+    li $a0, PLAYER_CHAR
+    syscall
+
+    li $v0, 4
+    la $a0, welcome_msg_you
+    syscall
+
+    li $v0, 11
+    li $a0, DOT_CHAR
+    syscall
+
+    li $v0, 4
+    la $a0, welcome_msg_dot
+    syscall
+
+    li $v0, 11
+    li $a0, GHOST_CHAR
+    syscall
+    
+    li $v0, 4
+    la $a0, welcome_msg_ghost
+    syscall
+    
+    li $v0, 4
+    la $a0, welcome_msg_objective
+    syscall
+
+    
+    li $v0, 4
+    la $a0, welcome_msg_wasd
+    syscall
+
+   
+    li $v0, 4
+    la $a0, welcome_msg_ghost_move
+    syscall
+
+
+print_welcome__epilogue:
+
+    jr  $ra
+
+################################################################################
+# .TEXT <main>
+	.text
+main:
+	# Subset:   1
 	#
 	# Args:     void
 	#
-	# Returns:  void
+	# Returns:
+	#    - $v0: int
 	#
 	# Frame:    [...]
 	# Uses:     [...]
@@ -191,83 +275,23 @@ print_welcome:
 	#   - ...
 	#
 	# Structure:
-	#   print_welcome
+	#   main
 	#   -> [prologue]
 	#       -> body
 	#   -> [epilogue]
 
-print_welcome__prologue:
+main__prologue:
+	push $ra
+	# TODO: put your prologue for main here
 
-print_welcome__body:
-    # Print welcome message
-    li $v0, 4
-    la $a0, welcome_msg
-    syscall
-
-    # Print wall message
-    li $v0, 4
-    la $a0, welcome_msg_wall
-    syscall
-
-    # Print player message
-    li $v0, 4
-    la $a0, welcome_msg_you
-    syscall
-
-    # Print dot message
-    li $v0, 4
-    la $a0, welcome_msg_dot
-    syscall
-
-    # Print ghost message
-    li $v0, 4
-    la $a0, welcome_msg_ghost
-    syscall
-
-    # Print objective message
-    li $v0, 4
-    la $a0, welcome_msg_objective
-    syscall
-
-    # Print move message
-    li $v0, 4
-    la $a0, welcome_msg_wasd
-    syscall
-
-    # Print ghost move message
-    li $v0, 4
-    la $a0, welcome_msg_ghost_move
-    syscall
-
-print_welcome__epilogue:
-
-	jr	$ra
-
-
-################################################################################
-# .TEXT
-    .text
-main:
-    # Subset:   1
-    #
-    # Args:     void
-    #
-    # Returns:  int
-    #
-    # Frame:    [...]
-    # Uses:     $t0, $t1, $t2, $t3, $t4, $t5, $t6, $t7, $s0, $s1, $s2, $s3, $s4
-    # Clobbers: $a0, $a1, $a2, $v0
-    #
-    # Locals:
-    #   - ...
-
-    jal get_seed
+main__body:
+	# TODO: put your body for main here
+	jal get_seed
     jal print_welcome
 
-main__loop:
-    jal print_map
-
-    # Print dots_collected
+main_loop:
+	jal print_map
+	# Print dots_collected
     li $v0, 4
     la $a0, dots_collected_msg_1
     syscall
@@ -278,29 +302,27 @@ main__loop:
     syscall
 
     li $v0, 4
-    la $v0, dots_collected_msg_2
+    la $a0, dots_collected_msg_2
     syscall
 
     li $v0, 1
-    lw $a0, MAP_DOTS
+    li $a0, MAP_DOTS
     syscall
 
     li $v0, 4
-    la $v0, dots_collected_msg_3
+    la $a0, dots_collected_msg_3
     syscall
 
     # Call play_tick
     la $a0, dots_collected
     jal play_tick
+    bnez $v0, main_loop  # If play_tick returns non-zero, continue loop
 
-    # Check play_tick return value
-    bnez $v0, main__loop  # If play_tick returns non-zero, continue loop
-
-main__exit:
-    # Exit program
-    li $v0, 10
-    syscall
-
+main__epilogue:
+	# TODO: put your epilogue for main here
+    li $v0, 0
+	pop $ra
+	jr	$ra
 
 
 ################################################################################
@@ -324,21 +346,18 @@ get_direction:
 	# Structure:
 	#   get_direction
 	#   -> [prologue]
-	#       -> printmovemsg
-	#   -> [loop_body]
-	#       -> return_LEFT  
-	#       -> return_RIGHT
-	#       -> return_DOWN
-	#       -> return_UP
+	#       -> body
 	#   -> [epilogue]
 
 get_direction__prologue:
+	push $t0
+	push $t1
     li $v0, 4
     la $a0, choose_move_msg
     syscall
 
 get_direction__body:
-	li $v0, 12        
+	li $v0, 12       
     syscall
     move $t0, $v0
 
@@ -350,12 +369,13 @@ get_direction__body:
     beq $t0, $t1, return_RIGHT
     li $t1, 's'
     beq $t0, $t1, return_DOWN
-
-	# Handle invalid input
+	li $t1, '\n'
+	beq $t0, $t1, get_direction__body
+	
     li $v0, 4
     la $a0, invalid_input_msg
     syscall
-    j get_direction__body
+	j get_direction__body
 
 return_LEFT:
     # Return LEFT (0)
@@ -376,8 +396,9 @@ return_DOWN:
     # Return DOWN (3)
     li $v0, 3
     j get_direction__epilogue
-
 get_direction__epilogue:
+	pop $t1
+	pop $t0
 	jr	$ra
 
 
@@ -438,7 +459,7 @@ play_tick__body:
     bnez $v0, play_tick__epilogue  # 不等于0就结束
 
     # Check whether the player has collected all the dots
-    move $a0, $s0         # Pass the address of dots_collected
+    move $a0, $s0        # Pass the address of dots_collected
     jal collect_dot_and_check_win
     bnez $v0, play_tick__epilogue  # If collect_dot_and_check_win returns FALSE, jump to game_over
 
@@ -457,30 +478,31 @@ exit:
     pop $ra
     jr $ra
 
+
 ################################################################################
 # .TEXT <copy_map>
-    .text
+	.text
 copy_map:
-    # Subset:   2
-    #
-    # Args:
-    #    - $a0: char dst[MAP_HEIGHT][MAP_WIDTH]
-    #    - $a1: char src[MAP_HEIGHT][MAP_WIDTH]
-    #
-    # Returns:  void
-    #
-    # Frame:    [...]
-    # Uses:     $t0 (i), $t1 (j), $t2 (temp)
-    # Clobbers: $t0, $t1, $t2
-    #
-    # Locals:
-    #   - ...
-    #
-    # Structure:
-    #   copy_map
-    #   -> [prologue]
-    #       -> body
-    #   -> [epilogue]
+	# Subset:   2
+	#
+	# Args:
+	#    - $a0: char dst[MAP_HEIGHT][MAP_WIDTH]
+	#    - $a1: char src[MAP_HEIGHT][MAP_WIDTH]
+	#
+	# Returns:  void
+	#
+	# Frame:    [...]
+	# Uses:     [...]
+	# Clobbers: [...]
+	#
+	# Locals:
+	#   - ...
+	#
+	# Structure:
+	#   copy_map
+	#   -> [prologue]
+	#       -> body
+	#   -> [epilogue]
 
 copy_map__prologue:
     # Prologue code here (if needed)
@@ -491,7 +513,6 @@ copy_map__body:
 
 copy_map_outer_loop:
     bge $t0, MAP_HEIGHT, copy_map__epilogue
-
     li $t1, 0
 
 copy_map_inner_loop:
@@ -520,52 +541,48 @@ copy_map_outer_loop_end:
 
 copy_map__epilogue:
     # Epilogue code here (if needed)
-
     jr $ra
 
 
 ################################################################################
 # .TEXT <get_valid_directions>
-.text
+	.text
 get_valid_directions:
-    # Subset:   2
-    #
-    # Args:
-    #    - $a0: int x
-    #    - $a1: int y
-    #    - $a2: int dir_array[TOTAL_DIRECTIONS]
-    #
-    # Returns:
-    #    - $v0: int
-    #
-    # Frame:    [...]
-    # Uses:     $t0, $t1, $t2, $t3, $t4, $t5
-    # Clobbers: $t6, $t7, $t8, $t9, $t10, $t11
-    #
-    # Locals:
-    #   - $t0: int valid_dirs
-    #   - $t1: int dir
-    #   - $t2: int x_copy
-    #   - $t3: int y_copy
-    #
-    # Structure:
-    #   get_valid_directions
-    #   -> [prologue]
-    #       -> body
-    #   -> [epilogue]
+	# Subset:   2
+	#
+	# Args:
+	#    - $a0: int x
+	#    - $a1: int y
+	#    - $a2: int dir_array[TOTAL_DIRECTIONS]
+	#
+	# Returns:
+	#    - $v0: int
+	#
+	# Frame:    [...]
+	# Uses:     [...]
+	# Clobbers: [...]
+	#
+	# Locals:
+	#   - ...
+	#
+	# Structure:
+	#   get_valid_directions
+	#   -> [prologue]
+	#       -> body
+	#   -> [epilogue]
 
 get_valid_directions__prologue:
-    # Save callee-saved registers
-    addi $sp, $sp, -4
-    sw $t0, 0($sp)
-    addi $sp, $sp, -4
-    sw $t1, 0($sp)
-    addi $sp, $sp, -4
-    sw $t2, 0($sp)
-    addi $sp, $sp, -4
-    sw $t3, 0($sp)
-
-    # Initialize valid_dirs to 0
+	push $ra
+	push $s0
+	push $t0
+	push $t1
+	push $t2
+	push $t3
+	push $t4
+	push $t5
+	push $t6
+	move $t0, $a0
+	move $t1, $a1
     li $t2, 0
     move $s0, $a2
 
@@ -574,13 +591,14 @@ get_valid_directions__body:
     li $t3, 0        # Initialize dir to 0
 
 direction_loop:
+	bge $t3, TOTAL_DIRECTIONS, get_valid_directions__epilogue
     # Prepare x_copy and y_copy
-    move $t0, $a0    # Copy x to x_copy
-    move $t1, $a1    # Copy y to y_copy
-    
+	sw $t0, x_copy
+	sw $t1, y_copy
+
     # Call try_move(&x_copy, &y_copy, dir)
-    move $a0, $t6    # Pass x_copy
-    move $a1, $t7    # Pass y_copy
+    la $a0, x_copy   # Pass x_copy
+    la $a1, y_copy    # Pass y_copy
     move $a2, $t3    # Pass dir
     jal try_move
 
@@ -589,10 +607,9 @@ direction_loop:
     beqz $t4, skip_add_direction
 
     # If try_move returned true, add dir to dir_array
-    move $a0, $t5    # Pass index
-    move $a1, $t3    # Pass dir
-    move $a2, $a2    # Pass dir_array (already in $a2)
-    jal add_direction
+	mul $t6, $t2, 4
+	add $t5, $s0, $t6
+	sw $t3, 0($t5) 
 
     # Increment valid_dirs
     addi $t2, $t2, 1
@@ -600,46 +617,54 @@ direction_loop:
 skip_add_direction:
     # Increment dir
     addi $t3, $t3, 1
-
-    # Continue looping if dir < TOTAL_DIRECTIONS
-    bne $t3, TOTAL_DIRECTIONS, direction_loop
-
-    # Return valid_dirs
-    move $v0, $t2
+	j direction_loop
 
 get_valid_directions__epilogue:
-    move $v0, $t0         # Move valid_dirs to $v0
-    lw $ra, 0($sp)        # Restore return address
-    lw $t0, 4($sp)        # Restore $t0 (valid_dirs)
-    lw $t1, 8($sp)        # Restore $t1 (dir)
-    lw $t2, 12($sp)       # Restore $t2 (x_copy)
-    lw $t3, 16($sp)       # Restore $t3 (y_copy)
-    addu $sp, $sp, 12     # Deallocate space for locals
+    move $v0, $t2         # Move valid_dirs to $v0
+	pop $t6
+	pop $t5
+	pop $t4
+	pop $t3
+	pop $t2
+	pop $t1
+	pop $t0
+	pop $s0
+	pop $ra
     jr $ra                # Return
-
 
 ################################################################################
 # .TEXT <print_map>
-.text
+	.text
 print_map:
-    # Subset: 2
-    #
-    # Args: void
-    #
-    # Returns: void
-    #
-    # Frame: [...]
-    # Uses: $t0, $t1, $t2, $t3, $t4, $t5, $t6, $t7, $s0, $s1, $s2, $s3, $s4
-    # Clobbers: $a0, $a1, $a2, $v0
-    #
-    # Locals:
-    #   - ...
-    push $ra
+	# Subset:   2
+	#
+	# Args:     void
+	#
+	# Returns:  void
+	#
+	# Frame:    [...]
+	# Uses:     [...]
+	# Clobbers: [...]
+	#
+	# Locals:
+	#   - ...
+	#
+	# Structure:
+	#   print_map
+	#   -> [prologue]
+	#       -> body
+	#   -> [epilogue]
+
+print_map__prologue:
+	push $ra
     la $a0, map_copy
     la $a1, map
     jal copy_map
 
-    # Mark the player's position
+	## jal:把下一条指令的地址放到ra，自己跳转到copy_map
+	## j  :只是自己跳转到copy_map
+print_map__body:
+#    map_copy[player_y][player_x] = PLAYER_CHAR;
     lw $t2, player_x      # Load player_x into $t2
     lw $t3, player_y      # Load player_y into $t3
     mul $t4, $t3, MAP_WIDTH # Calculate row offset
@@ -649,27 +674,18 @@ print_map:
     li $t6, PLAYER_CHAR   # Load PLAYER_CHAR into $t6
     sb $t6, 0($t5)        # Mark player's position in map_copy
 
-    # NOTE: We don't need to implement the loop for placing ghosts (Subset 3).
-    # Initialize loop counter
     li $t0, 0            # $t0 = i
-
-    # Loop through ghosts
-for_loop:
-    # Check if i >= NUM_GHOSTS, if so, exit the loop
+# print_ghost
+ghost_loop:
     bge $t0, NUM_GHOSTS, end_for_loop
 
-    # Load ghosts[i] address into $t1
     la $t1, ghosts      # $t1 = address of ghosts
-    mul $t7, $t0, 12    # Each ghost entry is 12 bytes (3 words)
+	mul $t7, $t0, 12	# t1是每一个ghost的首地址， t7==offset
     add $t1, $t1, $t7   # $t1 = address of ghosts[i]
-
-    # Load ghosts[i].x into $t2
     lw $t2, 0($t1)      # $t2 = ghosts[i].x
-
-    # Load ghosts[i].y into $t3
     lw $t3, 4($t1)      # $t3 = ghosts[i].y
 
-    # Calculate map_copy index
+	# Calculate map_copy index
     mul $t4, $t3, MAP_WIDTH  # $t4 = row offset
     add $t4, $t4, $t2       # $t4 = offset for map_copy[row][col]
 
@@ -681,19 +697,14 @@ for_loop:
     add $t6, $t6, $t4   # $t6 = address of map_copy[row][col]
     sb $t5, 0($t6)
 
-    # Increment loop counter (i)
     addi $t0, $t0, 1
-
-    # Repeat the loop
-    j for_loop
-
+	j	ghost_loop
 end_for_loop:
 
-
-    # Print the map
+# Print the map
     li $t0, 0             # $t0 = 0 (row index)
 outer_loop:
-    bge $t0, MAP_HEIGHT, print_map__done  # Exit the outer loop if row >= MAP_HEIGHT
+    bge $t0, MAP_HEIGHT, print_map__epilogue  # Exit the outer loop if row >= MAP_HEIGHT
 
     li $t1, 0             # $t1 = 0 (column index)
 inner_loop:
@@ -707,7 +718,7 @@ inner_loop:
     lb $t7, 0($t5)            # Load map_copy[i][j] into $t7
 
     # Print map_copy[i][j]
-    move $a0, $t7             # Pass map_copy[i][j] to print_char
+	move $a0, $t7  
     li $v0, 11                 # Set syscall code for printing a character
     syscall
 
@@ -718,18 +729,14 @@ inner_loop:
 inner_loop__done:
     # Print a newline character
     li $a0, '\n'
-    li $v0, 11                  # Set syscall code for printing a character
-    syscall
-
+    li $v0, 11 
+	syscall   
     # Increment row index
     addi $t0, $t0, 1
     j outer_loop
-
-print_map__done:
-    pop $ra
-    jr $ra
-
-
+print_map__epilogue:
+	pop $ra
+	jr	$ra
 
 ################################################################################
 # .TEXT <try_move>
@@ -747,7 +754,7 @@ try_move:
     #
     # Frame:    [...]
     # Uses:     $t0 (new_x), $t1 (new_y), $t2 (temp), $t3 (map_char)
-    # Clobbers: $t0, $t1, $t2, $t3
+    # Clobbers:
     #
     # Locals:
     #   - ...
@@ -759,15 +766,15 @@ try_move:
     #   -> [epilogue]
 
 try_move__prologue:
+	push $t0
+	push $t1
+	push $t2
+	push $t3
+	push $t4
+
     # Prologue code here (if needed)
-
-    # t0:*x
     lw $t0, 0($a0)
-
-    # $t1:*y
     lw $t1, 0($a1)
-
-    # t2:direction
     move $t2, $a2
 
 try_move__body:
@@ -792,32 +799,34 @@ try_move_down:
     add $t1, $t1, 1
 
 end_judge:
-    # Calculate map index based on new_x and new_y
     li $t3, MAP_WIDTH
     mul $t3, $t3, $t1
     add $t3, $t3, $t0
 
     # Load map_char from map into $t3
-    lb $t3, map($t3)
+    lb $t4, map($t3)
 
     # Compare map_char with WALL_CHAR
-    beq $t3, WALL_CHAR, wall_detected
+    beq $t4, WALL_CHAR, wall_detected
 
     sw $t0, 0($a0)
     sw $t1, 0($a1)
 
-    li $v0, 1
+    li $v0, TRUE
     j try_move__epilogue
 
 wall_detected:
 	# return FALSE
-    li $v0, 0
+    li $v0, FALSE
 
 try_move__epilogue:
     # Epilogue code here (if needed)
-
+	pop $t4
+	pop $t3
+	pop $t2
+	pop $t1
+	pop $t0
     jr $ra
-
 
 
 ################################################################################
@@ -844,6 +853,14 @@ check_ghost_collision:
 	#   -> [epilogue]
 
 check_ghost_collision__prologue:
+	push $t0
+	push $t1
+	push $t2
+	push $t3
+	push $t4
+	push $t5
+	push $t6
+	push $t7
 	li $t0, NUM_GHOSTS
 	li $t1, 0
 
@@ -852,19 +869,19 @@ check_ghost_collision__body:
 	mul $t2, $t1, 12
 	lw $t3, player_x
 	lw $t7, player_y
-	la $t4, ghost
-	add $t4, t4, t2
+	la $t4, ghosts
+	add $t4, $t4, $t2
 	lw $t5, 0($t4)
 	lw $t6, 4($t4)
 
-	beq $t3, t5, x_collision
+	beq $t3, $t5, x_collision
 
 continue_check_loop:
 	addi $t1, $t1, 1
 	j check_ghost_collision__body
 
 x_collision:
-	beq $t7, t6, y_collision
+	beq $t7, $t6, y_collision
 	j continue_check_loop	# no collision
 
 y_collision:
@@ -878,6 +895,14 @@ no_ghost_collision:
 	li $v0, FALSE
 
 check_ghost_collision__epilogue:
+	pop $t7
+	pop $t6
+	pop $t5
+	pop $t4
+	pop $t3
+	pop $t2
+	pop $t1
+	pop $t0
 	jr	$ra
 
 
@@ -939,11 +964,10 @@ collect_dot_and_check_win__win:
 	li $v0, 4
 	la $a0, game_won_msg
 	syscall
-	li v0, TRUE
+	li $v0, TRUE
 
 collect_dot_and_check_win__epilogue:
 	jr	$ra
-
 
 
 ################################################################################
@@ -957,18 +981,11 @@ do_ghost_logic:
 	# Returns:  void
 	#
 	# Frame:    [...]
-	# Uses:     $t0, $t1, $t2, $t3, $t4, $t5, $t6, $s0, $s1, $s2, $s3
-	# Clobbers: $t0, $t1, $t2, $t3, $t4, $t5, $t6, $s0, $s1, $s2, $s3
+	# Uses:     [...]
+	# Clobbers: [...]
 	#
 	# Locals:
-	#   - ghost_id ($t0)
-	#   - n_valid_dirs ($t1)
-	#   - dir_index ($t2)
-	#   - temp_x ($t3)
-	#   - temp_y ($t4)
-	#   - decision_point ($t5)
-	#   - rand_num ($t6)
-	#   - tmp ($t7)
+	#   - ...
 	#
 	# Structure:
 	#   do_ghost_logic
@@ -977,18 +994,21 @@ do_ghost_logic:
 	#   -> [epilogue]
 
 do_ghost_logic__prologue:
-	# Save registers that need to be preserved
-	addi $sp, $sp, -12   # Allocate space on the stack
-	sw $t0, 0($sp)       # Save $t0
-	sw $t1, 4($sp)       # Save $t1
-	sw $t2, 8($sp)       # Save $t2
+	push $ra
+	push $t0
+	push $t1
+	push $t2
+	push $t3
+	push $t4
+	push $t5
+	push $t6
+	push $t7
 
 	li $t0, 0
 	la $s2, valid_directions
 	la $s3, ghosts
 
 do_ghost_logic__body:
-	# Check if ghost_id >= NUM_GHOSTS
 	bge $t0, NUM_GHOSTS, do_ghost_logic__epilogue
 
 	# Load ghosts[ghost_id].x into temp_x
@@ -996,6 +1016,7 @@ do_ghost_logic__body:
 
 	# Load ghosts[ghost_id].y into temp_y
 	lw $t4, 4($s3)  # Offset 4 bytes to access y coordinate
+	lw $t2, 8($s3)
 
 	# Get valid directions and store the count in n_valid_dirs
 	move $a0, $t3         # x coordinate
@@ -1003,6 +1024,10 @@ do_ghost_logic__body:
     move $a2, $s2         # dir_array (valid_directions)
 	jal get_valid_directions
 	move $t1, $v0         # n_valid_dirs = return value
+
+	li $v0, 1
+	move $a0, $t1
+	syscall 	
 
 	# Check if n_valid_dirs == 0
 	beqz $t1, continue_loop
@@ -1012,10 +1037,8 @@ do_ghost_logic__body:
 	bgt $t1, $t5, not_decision_point
 
 	# Check if the ghost can move in its current direction
-	move $a0, $t3         # x coordinate
 	move $a0, $s3         # x coordinate
-	move $a1, $t4         # y coordinate
-	# move $a1, $s3+4         # y coordinate
+	addi $a1, $s3, 4      # y coordinate
 	move $a2, $t2         # direction
 	jal try_move
 	beqz $v0, not_decision_point
@@ -1025,44 +1048,42 @@ do_ghost_logic__body:
 
 not_decision_point:
 	# Generate a random number (rand_num = random_number() % n_valid_dirs)
-	move $a0, $t1         # n_valid_dirs
+	push $t0
 	jal random_number
+	pop $t0
 	move $t6, $v0
 
 	# Calculate dir_index (dir_index = rand_num % n_valid_dirs)
-	move $t7, $t1         # n_valid_dirs
-	remu $t2, $t6, $t7    # dir_index = rand_num % n_valid_dirs
+	remu $t2, $t6, $t1    # dir_index = rand_num % n_valid_dirs
 
 	# Load valid_directions[dir_index] into ghosts[ghost_id].direction
-	sll $t2, $t2, 2
+	mul $t2, $t2, 4
     add $t2, $t2, $s2     # Address of valid_directions[dir_index]
 	lw $t7, 0($t2)        # Load new valid direction
-    addi $s3, $s3, 12      # Move s3 to the next ghosts element (each element is 12 bytes)
 	sw $t7, 8($s3)        # Store it in ghosts[ghost_id].direction
 
 	# Try to move the ghost with the new direction
-	move $a0, $t3         # x coordinate
 	move $a0, $s3         # x coordinate
-	move $a1, $t4         # y coordinate
-    # move $a1, $s3+4         # y coordinate
+	addi $a1, $s3, 4      # y coordinate
 	move $a2, $t7         # new ghosts[ghost_id].direction
 	jal try_move
 
 continue_loop:
-	# Increment ghost_id
+	addi $s3, $s3, 12
 	addi $t0, $t0, 1
-	# Repeat the loop
 	j do_ghost_logic__body
 
 do_ghost_logic__epilogue:
-	# Restore registers
-	lw $t0, 0($sp)       # Restore $t0
-	lw $t1, 4($sp)       # Restore $t1
-	lw $t2, 8($sp)       # Restore $t2
-	addi $sp, $sp, 12    # Deallocate space on the stack
-
-	# Return from function
-	jr $ra
+	pop	$t7
+	pop	$t6
+	pop	$t5
+	pop	$t4
+	pop	$t3
+	pop	$t2
+	pop	$t1
+	pop	$t0
+	pop $ra
+	jr	$ra
 
 
 ################################################################################

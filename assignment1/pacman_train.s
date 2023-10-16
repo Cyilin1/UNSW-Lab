@@ -379,22 +379,22 @@ get_direction__body:
 
 return_LEFT:
     # Return LEFT (0)
-    li $v0, 0
+    li $v0, LEFT
     j get_direction__epilogue
 
 return_UP:
     # Return UP (1)
-    li $v0, 1
+    li $v0, UP
     j get_direction__epilogue
 
 return_RIGHT:
     # Return RIGHT (2)
-    li $v0, 2
+    li $v0, RIGHT
     j get_direction__epilogue
 
 return_DOWN:
     # Return DOWN (3)
-    li $v0, 3
+    li $v0, DOWN
     j get_direction__epilogue
 get_direction__epilogue:
 	pop $t1
@@ -428,22 +428,23 @@ play_tick:
 
 play_tick__prologue:
     push $ra
+	push $s0
+	push $s1
+	push $s2
+	move $s0, $a0
 
 play_tick__body:
-    # Save the address of dots_collected in $s0
-    move $s0, $a0
-
     # Load player_x address into $t0
-    la $t0, player_x
-    la $t1, player_y
+    la $s1, player_x
+    la $s2, player_y
 
     # Ask the player which direction to move
     jal get_direction
     move $t2, $v0
 
     # Try to move the player in that direction
-    move $a0, $t0         # x coordinate (address)
-    move $a1, $t1         # y coordinate (address)
+    move $a0, $s1         # x coordinate (address)
+    move $a1, $s2         # y coordinate (address)
     move $a2, $t2         # direction
     jal try_move
 
@@ -475,6 +476,9 @@ play_tick__epilogue:
 
 exit:
     # Return from the function
+	pop $s2
+	pop $s1
+	pop $s0
     pop $ra
     jr $ra
 
@@ -574,32 +578,29 @@ get_valid_directions:
 get_valid_directions__prologue:
 	push $ra
 	push $s0
-	push $t0
-	push $t1
-	push $t2
-	push $t3
-	push $t4
-	push $t5
-	push $t6
-	move $t0, $a0
-	move $t1, $a1
-    li $t2, 0
+	push $s1
+	push $s2
+	push $s6
+	push $s7
+	move $s1, $a0
+	move $s2, $a1
+    li $s7, 0
     move $s0, $a2
 
 get_valid_directions__body:
     # Loop over directions
-    li $t3, 0        # Initialize dir to 0
+    li $s6, 0        # Initialize dir to 0
 
 direction_loop:
-	bge $t3, TOTAL_DIRECTIONS, get_valid_directions__epilogue
+	bge $s6, TOTAL_DIRECTIONS, get_valid_directions__epilogue
     # Prepare x_copy and y_copy
-	sw $t0, x_copy
-	sw $t1, y_copy
+	sw $s1, x_copy
+	sw $s2, y_copy
 
     # Call try_move(&x_copy, &y_copy, dir)
     la $a0, x_copy   # Pass x_copy
     la $a1, y_copy    # Pass y_copy
-    move $a2, $t3    # Pass dir
+    move $a2, $s6    # Pass dir
     jal try_move
 
     # Check the result of try_move
@@ -607,27 +608,24 @@ direction_loop:
     beqz $t4, skip_add_direction
 
     # If try_move returned true, add dir to dir_array
-	mul $t6, $t2, 4
+	mul $t6, $s7, 4
 	add $t5, $s0, $t6
-	sw $t3, 0($t5) 
+	sw $s6, 0($t5) 
 
     # Increment valid_dirs
-    addi $t2, $t2, 1
+    addi $s7, $s7, 1
 
 skip_add_direction:
     # Increment dir
-    addi $t3, $t3, 1
+    addi $s6, $s6, 1
 	j direction_loop
 
 get_valid_directions__epilogue:
-    move $v0, $t2         # Move valid_dirs to $v0
-	pop $t6
-	pop $t5
-	pop $t4
-	pop $t3
-	pop $t2
-	pop $t1
-	pop $t0
+    move $v0, $s7         # Move valid_dirs to $v0
+	pop $s7
+	pop $s6
+	pop $s2
+	pop $s1
 	pop $s0
 	pop $ra
     jr $ra                # Return
@@ -766,12 +764,7 @@ try_move:
     #   -> [epilogue]
 
 try_move__prologue:
-	push $t0
-	push $t1
-	push $t2
-	push $t3
-	push $t4
-
+	begin
     # Prologue code here (if needed)
     lw $t0, 0($a0)
     lw $t1, 0($a1)
@@ -821,11 +814,7 @@ wall_detected:
 
 try_move__epilogue:
     # Epilogue code here (if needed)
-	pop $t4
-	pop $t3
-	pop $t2
-	pop $t1
-	pop $t0
+	end
     jr $ra
 
 
@@ -956,7 +945,7 @@ collect_dot_and_check_win__collect_dot:
 	sw $t1, 0($a0)
 
 	li $t2, MAP_DOTS
-	beq $t1, $t2, collect_dot_and_check_win
+	beq $t1, $t2, collect_dot_and_check_win__win
 	li $v0, FALSE
 	j collect_dot_and_check_win__epilogue
 
@@ -995,28 +984,25 @@ do_ghost_logic:
 
 do_ghost_logic__prologue:
 	push $ra
-	push $t0
-	push $t1
-	push $t2
-	push $t3
-	push $t4
-	push $t5
-	push $t6
-	push $t7
+	push $s1
+	push $s2
+	push $s3
+	push $s4
+	push $s5
 
-	li $t0, 0
+	li $s1, 0
 	la $s2, valid_directions
 	la $s3, ghosts
 
 do_ghost_logic__body:
-	bge $t0, NUM_GHOSTS, do_ghost_logic__epilogue
+	bge $s1, NUM_GHOSTS, do_ghost_logic__epilogue
 
 	# Load ghosts[ghost_id].x into temp_x
 	lw $t3, 0($s3)  # $s3 points to ghosts[ghost_id].x
 
 	# Load ghosts[ghost_id].y into temp_y
 	lw $t4, 4($s3)  # Offset 4 bytes to access y coordinate
-	lw $t2, 8($s3)
+	lw $s4, 8($s3)
 
 	# Get valid directions and store the count in n_valid_dirs
 	move $a0, $t3         # x coordinate
@@ -1024,10 +1010,7 @@ do_ghost_logic__body:
     move $a2, $s2         # dir_array (valid_directions)
 	jal get_valid_directions
 	move $t1, $v0         # n_valid_dirs = return value
-
-	li $v0, 1
-	move $a0, $t1
-	syscall 	
+	move $s5, $t1
 
 	# Check if n_valid_dirs == 0
 	beqz $t1, continue_loop
@@ -1039,7 +1022,7 @@ do_ghost_logic__body:
 	# Check if the ghost can move in its current direction
 	move $a0, $s3         # x coordinate
 	addi $a1, $s3, 4      # y coordinate
-	move $a2, $t2         # direction
+	move $a2, $s4         # direction
 	jal try_move
 	beqz $v0, not_decision_point
 
@@ -1048,13 +1031,11 @@ do_ghost_logic__body:
 
 not_decision_point:
 	# Generate a random number (rand_num = random_number() % n_valid_dirs)
-	push $t0
 	jal random_number
-	pop $t0
 	move $t6, $v0
 
 	# Calculate dir_index (dir_index = rand_num % n_valid_dirs)
-	remu $t2, $t6, $t1    # dir_index = rand_num % n_valid_dirs
+	remu $t2, $t6, $s5  # dir_index = rand_num % n_valid_dirs
 
 	# Load valid_directions[dir_index] into ghosts[ghost_id].direction
 	mul $t2, $t2, 4
@@ -1070,18 +1051,15 @@ not_decision_point:
 
 continue_loop:
 	addi $s3, $s3, 12
-	addi $t0, $t0, 1
+	addi $s1, $s1, 1
 	j do_ghost_logic__body
 
 do_ghost_logic__epilogue:
-	pop	$t7
-	pop	$t6
-	pop	$t5
-	pop	$t4
-	pop	$t3
-	pop	$t2
-	pop	$t1
-	pop	$t0
+	pop $s5
+	pop $s4
+	pop $s3
+	pop $s2
+	pop $s1
 	pop $ra
 	jr	$ra
 

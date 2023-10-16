@@ -324,7 +324,13 @@ void do_ghost_logic(void) {
             // The ghost is at a decision point
             // Randomly generate a new direction
             // NOTE - random_number() returns an *unsigned* value
-            uint32_t dir_index = random_number() % n_valid_dirs;
+            uint32_t ranNum = random_number();
+            uint32_t dir_index = ranNum % n_valid_dirs;
+            printf("%d\n", ranNum);
+            printf("%d\n", dir_index);
+            printf("%d\n", n_valid_dirs);
+
+
             // Update the ghost's current direction
             ghosts[ghost_id].direction = valid_directions[dir_index];
 

@@ -1,12 +1,12 @@
 # DPST1092 ... a general makefile for multiple exercises
 
-ifneq (, $(shell which dcc))
-CC	= dcc
-else ifneq (, $(shell which clang) )
-CC	= clang
-else
+#ifneq (, $(shell which dcc))
+#CC	= dcc
+#else ifneq (, $(shell which clang) )
+#CC	= clang
+#else
 CC  = gcc
-endif
+#endif
 
 EXERCISES	?=
 CLEAN_FILES	?=

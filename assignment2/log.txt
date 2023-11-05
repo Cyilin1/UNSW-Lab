@@ -1,59 +1,37 @@
-z5450298@vx14:~/Desktop/basin$ 1092 basin-example
-/usr/local/bin/1092: line 122: exec: basin-example: not found
-z5450298@vx14:~/Desktop/basin$ 1092 autotest basin S1
+z5450298@vx16:~/Desktop/basin$ 1092 autotest basin S1
 ./check_features_used.sh basin.c
-    ================================================================================
-    !! It looks like you are using fread or fwrite with a buffer with elements    !!
-    !! larger than 1 byte. This will not work correctly on machines which are     !!
-    !! big-endian, and so is non-portable. There is a style penalty for code      !!
-    !! which does not work correctly on other POSIX compliant machines, including !!
-    !! big-endian POSIX compliant machines. Instead try using bitwise operations  !!
-    !! to manipulate bytes to/from little endian integers.                        !!
-    ================================================================================
-    Your submission will be tested.
-
-
-/tmp/tmp6dghz9us/autotest/basin.c:95:13: 
-            fwrite(&block_hash, 8, 1, tabi_file);
-            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 dcc --leak-check -o basin *.c # basin.c
 Test S1_0 (S1: just_empty.tabi <- empty) - passed
 Test S1_1 (S1: files.tabi <- empty, short.txt, emojis.txt) - failed (Incorrect output)
-Your program produced these 34 lines of output:
+Your program produced these 29 lines of output:
 $ 1521 basin-examples
 $ cd examples
 $ cd aaa
 $ ../../basin --stage-1 ../files.tabi empty short.txt emojis.txt
-$ 1521 basin-show ../files.tabi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 41 42 49              chr TABI
-num records        0x00000004    03                       dec 3
-============================= Record   0 ==============================
-pathname len       0x00000005    05 00                    dec 5
-pathname           0x00000007    65 6d 70 74 79           chr empty
-num blocks         0x0000000c    00 00 00                 dec 0
-============================= Record   1 ==============================
-pathname len       0x0000000f    09 00                    dec 9
-pathname           0x00000011    73 68 6f 72 74 2e 74 78  chr short.tx
-                   0x00000019    74                       chr t
-num blocks         0x0000001a    01 00 00                 dec 1
-hashes[0]          0x0000001d    15 37 37 af 43 1b b2 48  chr .77.C..H
-============================= Record   2 ==============================
-pathname len       0x00000025    0a 00                    dec 10
-pathname           0x00000027    65 6d 6f 6a 69 73 2e 74  chr emojis.t
-                   0x0000002f    78 74                    chr xt
-num blocks         0x00000031    03 00 00                 dec 3
-hashes[0]          0x00000034    90 30 e3 14 6e e7 0a 90  chr .0..n...
-hashes[1]          0x0000003c    91 90 5c 46 fc 07 b3 93  chr ..\\F....
-hashes[2]          0x00000044    44 33 d3 7c d5 a9 92 f0  chr D3.|....
-$ hexdump -vC ../files.tabi
-00000000  54 41 42 49 03 05 00 65  6d 70 74 79 00 00 00 09  |TABI...empty....|
-00000010  00 73 68 6f 72 74 2e 74  78 74 01 00 00 15 37 37  |.short.txt....77|
-00000020  af 43 1b b2 48 0a 00 65  6d 6f 6a 69 73 2e 74 78  |.C..H..emojis.tx|
-00000030  74 03 00 00 90 30 e3 14  6e e7 0a 90 91 90 5c 46  |t....0..n.....\\F|
-...
+*** error: the above command exited with return-code -13 and outputted the following to stderr:
+
+Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+Execution stopped in WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) in basin.c at line 30:
+
+{
+    for (size_t i = 0; i < bytes; i++)
+    {
+-->     fputc((value >> (i * 8)) & 0xFF, file);
+    }
+}
+
+Values when execution stopped:
+
+bytes = 8
+i = 4
+value = 2939631381
+
+Function call traceback:
+
+WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) called at line 96 of basin.c
+stage_1(out_filename="../files.tabi", in_filenames=0x7ffd31bb56f0, num_in_filenames=3) called at line 56 of basin_main.c
+main(argc=6, argv=0x7ffd31bb56d8)
+
 
 
 The correct 34 lines of output for this test were:
@@ -94,31 +72,36 @@ $ hexdump -vC ../files.tabi
 
 The difference between your output(-) and the correct output(+) is:
 ...
-  num blocks         0x0000001a    01 00 00                 dec 1
-- hashes[0]          0x0000001d    15 37 37 af 43 1b b2 48  chr .77.C..H
-+ hashes[0]          0x0000001d    15 b8 4c 98 fe c3 b7 d6  chr ..L.....
-  ============================= Record   2 ==============================
-  hashes[1]          0x0000003c    91 90 5c 46 fc 07 b3 93  chr ..\F....
-- hashes[2]          0x00000044    44 33 d3 7c d5 a9 92 f0  chr D3.|....
-+ hashes[2]          0x00000044    8c ec 01 86 4c dc 63 af  chr ....L.c.
-  $ hexdump -vC ../files.tabi
-  00000000  54 41 42 49 03 05 00 65  6d 70 74 79 00 00 00 09  |TABI...empty....|
-- 00000010  00 73 68 6f 72 74 2e 74  78 74 01 00 00 15 37 37  |.short.txt....77|
-?                                                      ^^^^^                 ^^
-
-+ 00000010  00 73 68 6f 72 74 2e 74  78 74 01 00 00 15 b8 4c  |.short.txt.....L|
-?                                                      ^^^^^                 ^^
-
-- 00000020  af 43 1b b2 48 0a 00 65  6d 6f 6a 69 73 2e 74 78  |.C..H..emojis.tx|
-?           ^ ^^  - ^^^^^^                                      -  ^
-
-+ 00000020  98 fe c3 b7 d6 0a 00 65  6d 6f 6a 69 73 2e 74 78  |.......emojis.tx|
-?           ^^^ ^^^   ^^^^                                        ^^
-
-  00000030  74 03 00 00 90 30 e3 14  6e e7 0a 90 91 90 5c 46  |t....0..n.....\F|
-- 00000040  fc 07 b3 93 44 33 d3 7c  d5 a9 92 f0              |....D3.|....|
-+ 00000040  fc 07 b3 93 8c ec 01 86  4c dc 63 af              |........L.c.|
-  0000004c
+  $ ../../basin --stage-1 ../files.tabi empty short.txt emojis.txt
+- *** error: the above command exited with return-code -13 and outputted the following to stderr:
+- 
+- Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+- Execution stopped in WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) in basin.c at line 30:
+- 
+- {
+-     for (size_t i = 0; i < bytes; i++)
+-     {
+- -->     fputc((value >> (i * 8)) & 0xFF, file);
+-     }
+- }
+- 
+- Values when execution stopped:
+- 
+- bytes = 8
+- i = 4
+- value = 2939631381
+- 
+- Function call traceback:
+- 
+- WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) called at line 96 of basin.c
+- stage_1(out_filename="../files.tabi", in_filenames=0x7ffd31bb56f0, num_in_filenames=3) called at line 56 of basin_main.c
+- main(argc=6, argv=0x7ffd31bb56d8)
+- 
+- 
++ $ 1521 basin-show ../files.tabi
++ Field name         Offset        Bytes                    ASCII/Numeric
++ -----------------------------------------------------------------------
++ magic              0x00000000    54 41 42 49              chr TABI
 
 The input for this test was:
 1521 basin-examples
@@ -129,40 +112,35 @@ cd aaa
 hexdump -vC ../files.tabi
 
 Test S1_2 (S1: my_text_files.tabi <- empty, short.txt, emojis.txt, lyrics.txt) - failed (Incorrect output)
-Your program produced these 102 lines of output:
+Your program produced these 29 lines of output:
 $ 1521 basin-examples
 $ cd examples
 $ cd aaa
 $ ../../basin --stage-1 ../my_text_files.tabi empty short.txt emojis.txt lyrics.txt
-$ 1521 basin-show ../my_text_files.tabi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 41 42 49              chr TABI
-num records        0x00000004    04                       dec 4
-============================= Record   0 ==============================
-pathname len       0x00000005    05 00                    dec 5
-pathname           0x00000007    65 6d 70 74 79           chr empty
-num blocks         0x0000000c    00 00 00                 dec 0
-============================= Record   1 ==============================
-pathname len       0x0000000f    09 00                    dec 9
-pathname           0x00000011    73 68 6f 72 74 2e 74 78  chr short.tx
-                   0x00000019    74                       chr t
-num blocks         0x0000001a    01 00 00                 dec 1
-hashes[0]          0x0000001d    15 37 37 af 43 1b b2 48  chr .77.C..H
-============================= Record   2 ==============================
-pathname len       0x00000025    0a 00                    dec 10
-pathname           0x00000027    65 6d 6f 6a 69 73 2e 74  chr emojis.t
-                   0x0000002f    78 74                    chr xt
-num blocks         0x00000031    03 00 00                 dec 3
-hashes[0]          0x00000034    90 30 e3 14 6e e7 0a 90  chr .0..n...
-hashes[1]          0x0000003c    91 90 5c 46 fc 07 b3 93  chr ..\\F....
-hashes[2]          0x00000044    44 33 d3 7c d5 a9 92 f0  chr D3.|....
-============================= Record   3 ==============================
-pathname len       0x0000004c    0a 00                    dec 10
-pathname           0x0000004e    6c 79 72 69 63 73 2e 74  chr lyrics.t
-                   0x00000056    78 74                    chr xt
-num blocks         0x00000058    29 00 00                 dec 41
-...
+*** error: the above command exited with return-code -13 and outputted the following to stderr:
+
+Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+Execution stopped in WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) in basin.c at line 30:
+
+{
+    for (size_t i = 0; i < bytes; i++)
+    {
+-->     fputc((value >> (i * 8)) & 0xFF, file);
+    }
+}
+
+Values when execution stopped:
+
+bytes = 8
+i = 4
+value = 2939631381
+
+Function call traceback:
+
+WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) called at line 96 of basin.c
+stage_1(out_filename="../my_text_files.tabi", in_filenames=0x7fffe4df75d0, num_in_filenames=4) called at line 56 of basin_main.c
+main(argc=7, argv=0x7fffe4df75b8)
+
 
 
 The correct 102 lines of output for this test were:
@@ -203,42 +181,36 @@ num blocks         0x00000058    29 00 00                 dec 41
 
 The difference between your output(-) and the correct output(+) is:
 ...
-  num blocks         0x0000001a    01 00 00                 dec 1
-- hashes[0]          0x0000001d    15 37 37 af 43 1b b2 48  chr .77.C..H
-+ hashes[0]          0x0000001d    15 b8 4c 98 fe c3 b7 d6  chr ..L.....
-  ============================= Record   2 ==============================
-  hashes[1]          0x0000003c    91 90 5c 46 fc 07 b3 93  chr ..\F....
-- hashes[2]          0x00000044    44 33 d3 7c d5 a9 92 f0  chr D3.|....
-+ hashes[2]          0x00000044    8c ec 01 86 4c dc 63 af  chr ....L.c.
-  ============================= Record   3 ==============================
-  hashes[39]         0x00000193    09 29 05 16 d4 3a af 4b  chr .)...:.K
-- hashes[40]         0x0000019b    21 68 cf 0d 50 57 f4 d4  chr !h..PW..
-+ hashes[40]         0x0000019b    39 c9 77 8b d3 34 cf e3  chr 9.w..4..
-  $ hexdump -vC ../my_text_files.tabi
-  00000000  54 41 42 49 04 05 00 65  6d 70 74 79 00 00 00 09  |TABI...empty....|
-- 00000010  00 73 68 6f 72 74 2e 74  78 74 01 00 00 15 37 37  |.short.txt....77|
-?                                                      ^^^^^                 ^^
-
-+ 00000010  00 73 68 6f 72 74 2e 74  78 74 01 00 00 15 b8 4c  |.short.txt.....L|
-?                                                      ^^^^^                 ^^
-
-- 00000020  af 43 1b b2 48 0a 00 65  6d 6f 6a 69 73 2e 74 78  |.C..H..emojis.tx|
-?           ^ ^^  - ^^^^^^                                      -  ^
-
-+ 00000020  98 fe c3 b7 d6 0a 00 65  6d 6f 6a 69 73 2e 74 78  |.......emojis.tx|
-?           ^^^ ^^^   ^^^^                                        ^^
-
-  00000030  74 03 00 00 90 30 e3 14  6e e7 0a 90 91 90 5c 46  |t....0..n.....\F|
-- 00000040  fc 07 b3 93 44 33 d3 7c  d5 a9 92 f0 0a 00 6c 79  |....D3.|......ly|
-+ 00000040  fc 07 b3 93 8c ec 01 86  4c dc 63 af 0a 00 6c 79  |........L.c...ly|
-  00000050  72 69 63 73 2e 74 78 74  29 00 00 dc 7b 2c 89 43  |rics.txt)...{,.C|
-  00000180  d6 24 99 ed cc c3 e5 56  e1 25 81 93 e0 05 4a 23  |.$.....V.%....J#|
-- 00000190  6c f4 c5 09 29 05 16 d4  3a af 4b 21 68 cf 0d 50  |l...)...:.K!h..P|
-?                                             ^^^^ ^^^^^ ^^^              ^^  -
-
-+ 00000190  6c f4 c5 09 29 05 16 d4  3a af 4b 39 c9 77 8b d3  |l...)...:.K9.w..|
-?                                             ^^^^^^^^^ ^^ ^              ^^^
-
+  $ ../../basin --stage-1 ../my_text_files.tabi empty short.txt emojis.txt lyrics.txt
+- *** error: the above command exited with return-code -13 and outputted the following to stderr:
+- 
+- Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+- Execution stopped in WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) in basin.c at line 30:
+- 
+- {
+-     for (size_t i = 0; i < bytes; i++)
+-     {
+- -->     fputc((value >> (i * 8)) & 0xFF, file);
+-     }
+- }
+- 
+- Values when execution stopped:
+- 
+- bytes = 8
+- i = 4
+- value = 2939631381
+- 
+- Function call traceback:
+- 
+- WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) called at line 96 of basin.c
+- stage_1(out_filename="../my_text_files.tabi", in_filenames=0x7fffe4df75d0, num_in_filenames=4) called at line 56 of basin_main.c
+- main(argc=7, argv=0x7fffe4df75b8)
+- 
+- 
++ $ 1521 basin-show ../my_text_files.tabi
++ Field name         Offset        Bytes                    ASCII/Numeric
++ -----------------------------------------------------------------------
++ magic              0x00000000    54 41 42 49              chr TABI
 
 The input for this test was:
 1521 basin-examples
@@ -249,7 +221,7 @@ cd aaa
 hexdump -vC ../my_text_files.tabi
 
 Test S1_3 (S1: binaries.tabi <- fractal_bin, little_endian_shorts) - failed (Incorrect output)
-Your program produced these 426 lines of output:
+Your program produced these 34 lines of output:
 /===================================================================
 | NOTE: this test uses bigger or more complicated files. If you're |
 |       failing other simpler tests for this subset, it's probably |
@@ -259,29 +231,29 @@ $ 1521 basin-examples
 $ cd examples
 $ cd aaa
 $ ../../basin --stage-1 ../binaries.tabi fractal_bin little_endian_shorts
-$ 1521 basin-show ../binaries.tabi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 41 42 49              chr TABI
-num records        0x00000004    02                       dec 2
-============================= Record   0 ==============================
-pathname len       0x00000005    0b 00                    dec 11
-pathname           0x00000007    66 72 61 63 74 61 6c 5f  chr fractal_
-                   0x0000000f    62 69 6e                 chr bin
-num blocks         0x00000012    06 00 00                 dec 6
-hashes[0]          0x00000015    b4 09 c5 43 7f f3 b8 5c  chr ...C...\\
-hashes[1]          0x0000001d    83 f9 cf 1b 14 9a b8 cd  chr ........
-hashes[2]          0x00000025    91 7d 6e 30 37 54 32 3a  chr .}n07T2:
-hashes[3]          0x0000002d    73 ea 03 82 4b 8f 6a 3a  chr s...K.j:
-hashes[4]          0x00000035    3c 90 bf 04 5d a0 bb 60  chr <...]..`
-hashes[5]          0x0000003d    f6 9d 17 fd a8 d7 02 c3  chr ........
-============================= Record   1 ==============================
-pathname len       0x00000045    14 00                    dec 20
-pathname           0x00000047    6c 69 74 74 6c 65 5f 65  chr little_e
-                   0x0000004f    6e 64 69 61 6e 5f 73 68  chr ndian_sh
-                   0x00000057    6f 72 74 73              chr orts
-num blocks         0x0000005b    02 01 00                 dec 258
-hashes[0]          0x0000005e    25 24 94 72 a2 72 7e 0f  chr %$.r.r~.
+*** error: the above command exited with return-code -13 and outputted the following to stderr:
+
+Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+Execution stopped in WriteLittleEndian(file=0x615000000080, value=1136986548, bytes=8) in basin.c at line 30:
+
+{
+    for (size_t i = 0; i < bytes; i++)
+    {
+-->     fputc((value >> (i * 8)) & 0xFF, file);
+    }
+}
+
+Values when execution stopped:
+
+bytes = 8
+i = 4
+value = 1136986548
+
+Function call traceback:
+
+WriteLittleEndian(file=0x615000000080, value=1136986548, bytes=8) called at line 96 of basin.c
+stage_1(out_filename="../binaries.tabi", in_filenames=0x7ffe177884a0, num_in_filenames=2) called at line 56 of basin_main.c
+main(argc=5, argv=0x7ffe17788488)
 ...
 
 
@@ -323,11 +295,36 @@ hashes[0]          0x0000005e    25 24 94 72 a2 72 7e 0f  chr %$.r.r~.
 
 The difference between your output(-) and the correct output(+) is:
 ...
-  hashes[4]          0x00000035    3c 90 bf 04 5d a0 bb 60  chr <...]..`
-- hashes[5]          0x0000003d    f6 9d 17 fd a8 d7 02 c3  chr ........
-+ hashes[5]          0x0000003d    b6 e7 05 7a 33 b5 95 1a  chr ...z3...
-  ============================= Record   1 ==============================
-...
+  $ ../../basin --stage-1 ../binaries.tabi fractal_bin little_endian_shorts
+- *** error: the above command exited with return-code -13 and outputted the following to stderr:
+- 
+- Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+- Execution stopped in WriteLittleEndian(file=0x615000000080, value=1136986548, bytes=8) in basin.c at line 30:
+- 
+- {
+-     for (size_t i = 0; i < bytes; i++)
+-     {
+- -->     fputc((value >> (i * 8)) & 0xFF, file);
+-     }
+- }
+- 
+- Values when execution stopped:
+- 
+- bytes = 8
+- i = 4
+- value = 1136986548
+- 
+- Function call traceback:
+- 
+- WriteLittleEndian(file=0x615000000080, value=1136986548, bytes=8) called at line 96 of basin.c
+- stage_1(out_filename="../binaries.tabi", in_filenames=0x7ffe177884a0, num_in_filenames=2) called at line 56 of basin_main.c
+- main(argc=5, argv=0x7ffe17788488)
+- 
+- 
++ $ 1521 basin-show ../binaries.tabi
++ Field name         Offset        Bytes                    ASCII/Numeric
++ -----------------------------------------------------------------------
++ magic              0x00000000    54 41 42 49              chr TABI
 
 The input for this test was:
 1521 basin-examples
@@ -338,40 +335,35 @@ cd aaa
 hexdump -vC ../binaries.tabi
 
 Test S1_4 (S1: fizz_buzz.tabi <- fizz/buzz.c, fizz/buzz.golfed.py, fizz/buzz.hs, fizz/buzz.mips.s, fizz/buzz.rs, fizz/buzz.x64.s) - failed (Incorrect output)
-Your program produced these 74 lines of output:
+Your program produced these 29 lines of output:
 $ 1521 basin-examples
 $ cd examples
 $ cd aaa
 $ ../../basin --stage-1 ../fizz_buzz.tabi fizz/buzz.c fizz/buzz.golfed.py fizz/buzz.hs fizz/buzz.mips.s fizz/buzz.rs fizz/buzz.x64.s
-$ 1521 basin-show ../fizz_buzz.tabi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 41 42 49              chr TABI
-num records        0x00000004    06                       dec 6
-============================= Record   0 ==============================
-pathname len       0x00000005    0b 00                    dec 11
-pathname           0x00000007    66 69 7a 7a 2f 62 75 7a  chr fizz/buz
-                   0x0000000f    7a 2e 63                 chr z.c
-num blocks         0x00000012    02 00 00                 dec 2
-hashes[0]          0x00000015    cd 78 3b ad 53 bc bc e0  chr .x;.S...
-hashes[1]          0x0000001d    5f 5c 9e 57 1c 61 03 8b  chr _\\.W.a..
-============================= Record   1 ==============================
-pathname len       0x00000025    13 00                    dec 19
-pathname           0x00000027    66 69 7a 7a 2f 62 75 7a  chr fizz/buz
-                   0x0000002f    7a 2e 67 6f 6c 66 65 64  chr z.golfed
-                   0x00000037    2e 70 79                 chr .py
-num blocks         0x0000003a    01 00 00                 dec 1
-hashes[0]          0x0000003d    36 3a 98 30 5e 25 98 f8  chr 6:.0^%..
-============================= Record   2 ==============================
-pathname len       0x00000045    0c 00                    dec 12
-pathname           0x00000047    66 69 7a 7a 2f 62 75 7a  chr fizz/buz
-                   0x0000004f    7a 2e 68 73              chr z.hs
-num blocks         0x00000053    01 00 00                 dec 1
-hashes[0]          0x00000056    2d a3 64 13 89 69 77 e3  chr -.d..iw.
-============================= Record   3 ==============================
-pathname len       0x0000005e    10 00                    dec 16
-pathname           0x00000060    66 69 7a 7a 2f 62 75 7a  chr fizz/buz
-...
+*** error: the above command exited with return-code -13 and outputted the following to stderr:
+
+Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+Execution stopped in WriteLittleEndian(file=0x615000000080, value=2906355917, bytes=8) in basin.c at line 30:
+
+{
+    for (size_t i = 0; i < bytes; i++)
+    {
+-->     fputc((value >> (i * 8)) & 0xFF, file);
+    }
+}
+
+Values when execution stopped:
+
+bytes = 8
+i = 4
+value = 2906355917
+
+Function call traceback:
+
+WriteLittleEndian(file=0x615000000080, value=2906355917, bytes=8) called at line 96 of basin.c
+stage_1(out_filename="../fizz_buzz.tabi", in_filenames=0x7ffd8fd5e600, num_in_filenames=6) called at line 56 of basin_main.c
+main(argc=9, argv=0x7ffd8fd5e5e8)
+
 
 
 The correct 74 lines of output for this test were:
@@ -412,40 +404,36 @@ pathname           0x00000060    66 69 7a 7a 2f 62 75 7a  chr fizz/buz
 
 The difference between your output(-) and the correct output(+) is:
 ...
-  hashes[0]          0x00000015    cd 78 3b ad 53 bc bc e0  chr .x;.S...
-- hashes[1]          0x0000001d    5f 5c 9e 57 1c 61 03 8b  chr _\.W.a..
-+ hashes[1]          0x0000001d    7f 99 2e e9 97 15 1a 87  chr ........
-  ============================= Record   1 ==============================
-  num blocks         0x0000003a    01 00 00                 dec 1
-- hashes[0]          0x0000003d    36 3a 98 30 5e 25 98 f8  chr 6:.0^%..
-+ hashes[0]          0x0000003d    72 bc 57 01 52 6f 27 01  chr r.W.Ro'.
-  ============================= Record   2 ==============================
-  num blocks         0x00000053    01 00 00                 dec 1
-- hashes[0]          0x00000056    2d a3 64 13 89 69 77 e3  chr -.d..iw.
-+ hashes[0]          0x00000056    9d 3e b9 46 27 98 d7 a8  chr .>.F'...
-  ============================= Record   3 ==============================
-  hashes[4]          0x00000093    3c 6b 47 41 dd 2b 89 ba  chr <kGA.+..
-- hashes[5]          0x0000009b    0a c0 83 c0 80 9d 84 f5  chr ........
-+ hashes[5]          0x0000009b    be 60 68 11 4f ba e0 e6  chr .`h.O...
-  ============================= Record   4 ==============================
-  hashes[3]          0x000000e8    70 48 49 38 ea 22 59 42  chr pHI8."YB
-- hashes[4]          0x000000f0    44 ff 27 c5 34 29 fe ed  chr D.'.4)..
-+ hashes[4]          0x000000f0    2c fb bc ac 68 e8 e8 19  chr ,...h...
-  $ hexdump -vC ../fizz_buzz.tabi
-  00000000  54 41 42 49 06 0b 00 66  69 7a 7a 2f 62 75 7a 7a  |TABI...fizz/buzz|
-- 00000010  2e 63 02 00 00 cd 78 3b  ad 53 bc bc e0 5f 5c 9e  |.c....x;.S..._\.|
-?                                                   ^  ---                  ^^
-
-+ 00000010  2e 63 02 00 00 cd 78 3b  ad 53 bc bc e0 7f 99 2e  |.c....x;.S......|
-?                                                   ^   +++                 ^^
-
-- 00000020  57 1c 61 03 8b 13 00 66  69 7a 7a 2f 62 75 7a 7a  |W.a....fizz/buzz|
-?             ------------                                     - ^
-
-+ 00000020  e9 97 15 1a 87 13 00 66  69 7a 7a 2f 62 75 7a 7a  |.......fizz/buzz|
-?           +++++++ +++++                                       ^^
-
-- 00000030  2e 67 6f 6c 66 65 64 2e  70 79 01 00 00 36 3a 98  |.golfed.py...6:.|
+  $ ../../basin --stage-1 ../fizz_buzz.tabi fizz/buzz.c fizz/buzz.golfed.py fizz/buzz.hs fizz/buzz.mips.s fizz/buzz.rs fizz/buzz.x64.s
+- *** error: the above command exited with return-code -13 and outputted the following to stderr:
+- 
+- Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+- Execution stopped in WriteLittleEndian(file=0x615000000080, value=2906355917, bytes=8) in basin.c at line 30:
+- 
+- {
+-     for (size_t i = 0; i < bytes; i++)
+-     {
+- -->     fputc((value >> (i * 8)) & 0xFF, file);
+-     }
+- }
+- 
+- Values when execution stopped:
+- 
+- bytes = 8
+- i = 4
+- value = 2906355917
+- 
+- Function call traceback:
+- 
+- WriteLittleEndian(file=0x615000000080, value=2906355917, bytes=8) called at line 96 of basin.c
+- stage_1(out_filename="../fizz_buzz.tabi", in_filenames=0x7ffd8fd5e600, num_in_filenames=6) called at line 56 of basin_main.c
+- main(argc=9, argv=0x7ffd8fd5e5e8)
+- 
+- 
++ $ 1521 basin-show ../fizz_buzz.tabi
++ Field name         Offset        Bytes                    ASCII/Numeric
++ -----------------------------------------------------------------------
++ magic              0x00000000    54 41 42 49              chr TABI
 
 The input for this test was:
 1521 basin-examples
@@ -456,7 +444,7 @@ cd aaa
 hexdump -vC ../fizz_buzz.tabi
 
 Test S1_5 (S1: everything.tabi <- fizz/buzz.c, fizz/buzz.golfed.py, empty, fizz/buzz.hs, fractal_bin, little_endian_shorts, lyrics.txt, fizz/buzz.mips.s, fizz/buzz.rs, fizz/buzz.x64.s, emojis.txt, short.txt) - failed (Incorrect output)
-Your program produced these 578 lines of output:
+Your program produced these 34 lines of output:
 /===================================================================
 | NOTE: this test uses bigger or more complicated files. If you're |
 |       failing other simpler tests for this subset, it's probably |
@@ -466,29 +454,29 @@ $ 1521 basin-examples
 $ cd examples
 $ cd aaa
 $ ../../basin --stage-1 ../everything.tabi fizz/buzz.c fizz/buzz.golfed.py empty fizz/buzz.hs fractal_bin little_endian_shorts lyrics.txt fizz/buzz.mips.s fizz/buzz.rs fizz/buzz.x64.s emojis.txt short.txt
-$ 1521 basin-show ../everything.tabi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 41 42 49              chr TABI
-num records        0x00000004    0c                       dec 12
-============================= Record   0 ==============================
-pathname len       0x00000005    0b 00                    dec 11
-pathname           0x00000007    66 69 7a 7a 2f 62 75 7a  chr fizz/buz
-                   0x0000000f    7a 2e 63                 chr z.c
-num blocks         0x00000012    02 00 00                 dec 2
-hashes[0]          0x00000015    cd 78 3b ad 53 bc bc e0  chr .x;.S...
-hashes[1]          0x0000001d    5f 5c 9e 57 1c 61 03 8b  chr _\\.W.a..
-============================= Record   1 ==============================
-pathname len       0x00000025    13 00                    dec 19
-pathname           0x00000027    66 69 7a 7a 2f 62 75 7a  chr fizz/buz
-                   0x0000002f    7a 2e 67 6f 6c 66 65 64  chr z.golfed
-                   0x00000037    2e 70 79                 chr .py
-num blocks         0x0000003a    01 00 00                 dec 1
-hashes[0]          0x0000003d    36 3a 98 30 5e 25 98 f8  chr 6:.0^%..
-============================= Record   2 ==============================
-pathname len       0x00000045    05 00                    dec 5
-pathname           0x00000047    65 6d 70 74 79           chr empty
-num blocks         0x0000004c    00 00 00                 dec 0
+*** error: the above command exited with return-code -13 and outputted the following to stderr:
+
+Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+Execution stopped in WriteLittleEndian(file=0x615000000080, value=2906355917, bytes=8) in basin.c at line 30:
+
+{
+    for (size_t i = 0; i < bytes; i++)
+    {
+-->     fputc((value >> (i * 8)) & 0xFF, file);
+    }
+}
+
+Values when execution stopped:
+
+bytes = 8
+i = 4
+value = 2906355917
+
+Function call traceback:
+
+WriteLittleEndian(file=0x615000000080, value=2906355917, bytes=8) called at line 96 of basin.c
+stage_1(out_filename="../everything.tabi", in_filenames=0x7ffccab017b0, num_in_filenames=12) called at line 56 of basin_main.c
+main(argc=15, argv=0x7ffccab01798)
 ...
 
 
@@ -530,23 +518,36 @@ num blocks         0x0000004c    00 00 00                 dec 0
 
 The difference between your output(-) and the correct output(+) is:
 ...
-  hashes[0]          0x00000015    cd 78 3b ad 53 bc bc e0  chr .x;.S...
-- hashes[1]          0x0000001d    5f 5c 9e 57 1c 61 03 8b  chr _\.W.a..
-+ hashes[1]          0x0000001d    7f 99 2e e9 97 15 1a 87  chr ........
-  ============================= Record   1 ==============================
-  num blocks         0x0000003a    01 00 00                 dec 1
-- hashes[0]          0x0000003d    36 3a 98 30 5e 25 98 f8  chr 6:.0^%..
-+ hashes[0]          0x0000003d    72 bc 57 01 52 6f 27 01  chr r.W.Ro'.
-  ============================= Record   2 ==============================
-  num blocks         0x0000005d    01 00 00                 dec 1
-- hashes[0]          0x00000060    2d a3 64 13 89 69 77 e3  chr -.d..iw.
-+ hashes[0]          0x00000060    9d 3e b9 46 27 98 d7 a8  chr .>.F'...
-  ============================= Record   4 ==============================
-  hashes[4]          0x00000098    3c 90 bf 04 5d a0 bb 60  chr <...]..`
-- hashes[5]          0x000000a0    f6 9d 17 fd a8 d7 02 c3  chr ........
-+ hashes[5]          0x000000a0    b6 e7 05 7a 33 b5 95 1a  chr ...z3...
-  ============================= Record   5 ==============================
-...
+  $ ../../basin --stage-1 ../everything.tabi fizz/buzz.c fizz/buzz.golfed.py empty fizz/buzz.hs fractal_bin little_endian_shorts lyrics.txt fizz/buzz.mips.s fizz/buzz.rs fizz/buzz.x64.s emojis.txt short.txt
+- *** error: the above command exited with return-code -13 and outputted the following to stderr:
+- 
+- Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+- Execution stopped in WriteLittleEndian(file=0x615000000080, value=2906355917, bytes=8) in basin.c at line 30:
+- 
+- {
+-     for (size_t i = 0; i < bytes; i++)
+-     {
+- -->     fputc((value >> (i * 8)) & 0xFF, file);
+-     }
+- }
+- 
+- Values when execution stopped:
+- 
+- bytes = 8
+- i = 4
+- value = 2906355917
+- 
+- Function call traceback:
+- 
+- WriteLittleEndian(file=0x615000000080, value=2906355917, bytes=8) called at line 96 of basin.c
+- stage_1(out_filename="../everything.tabi", in_filenames=0x7ffccab017b0, num_in_filenames=12) called at line 56 of basin_main.c
+- main(argc=15, argv=0x7ffccab01798)
+- 
+- 
++ $ 1521 basin-show ../everything.tabi
++ Field name         Offset        Bytes                    ASCII/Numeric
++ -----------------------------------------------------------------------
++ magic              0x00000000    54 41 42 49              chr TABI
 
 The input for this test was:
 1521 basin-examples
@@ -557,40 +558,35 @@ cd aaa
 hexdump -vC ../everything.tabi
 
 Test S1_6 (S1: long.tabi <- empty, [long_path], emojis.txt) - failed (Incorrect output)
-Your program produced these 85 lines of output:
+Your program produced these 29 lines of output:
 $ 1521 basin-examples
 $ cd examples
 $ cd aaa
 $ ../../basin --stage-1 ../long.tabi empty ./long_path/this_is_a/very_long/sequence_of/nested/subdirectories/designed_to/check_whether/your_implementation/can_correctly/handle/long/path/names/.you/may/want/to/use/the/tab/key/if/you/are/typing/this/into/a/terminal/otherwise/you/can/just/copy/paste/this/path/finally_done.txt emojis.txt
-$ 1521 basin-show ../long.tabi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 41 42 49              chr TABI
-num records        0x00000004    03                       dec 3
-============================= Record   0 ==============================
-pathname len       0x00000005    05 00                    dec 5
-pathname           0x00000007    65 6d 70 74 79           chr empty
-num blocks         0x0000000c    00 00 00                 dec 0
-============================= Record   1 ==============================
-pathname len       0x0000000f    19 01                    dec 281
-pathname           0x00000011    2e 2f 6c 6f 6e 67 5f 70  chr ./long_p
-                   0x00000019    61 74 68 2f 74 68 69 73  chr ath/this
-                   0x00000021    5f 69 73 5f 61 2f 76 65  chr _is_a/ve
-                   0x00000029    72 79 5f 6c 6f 6e 67 2f  chr ry_long/
-                   0x00000031    73 65 71 75 65 6e 63 65  chr sequence
-                   0x00000039    5f 6f 66 2f 6e 65 73 74  chr _of/nest
-                   0x00000041    65 64 2f 73 75 62 64 69  chr ed/subdi
-                   0x00000049    72 65 63 74 6f 72 69 65  chr rectorie
-                   0x00000051    73 2f 64 65 73 69 67 6e  chr s/design
-                   0x00000059    65 64 5f 74 6f 2f 63 68  chr ed_to/ch
-                   0x00000061    65 63 6b 5f 77 68 65 74  chr eck_whet
-                   0x00000069    68 65 72 2f 79 6f 75 72  chr her/your
-                   0x00000071    5f 69 6d 70 6c 65 6d 65  chr _impleme
-                   0x00000079    6e 74 61 74 69 6f 6e 2f  chr ntation/
-                   0x00000081    63 61 6e 5f 63 6f 72 72  chr can_corr
-                   0x00000089    65 63 74 6c 79 2f 68 61  chr ectly/ha
-                   0x00000091    6e 64 6c 65 2f 6c 6f 6e  chr ndle/lon
-...
+*** error: the above command exited with return-code -13 and outputted the following to stderr:
+
+Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+Execution stopped in WriteLittleEndian(file=0x615000000080, value=1569258541, bytes=8) in basin.c at line 30:
+
+{
+    for (size_t i = 0; i < bytes; i++)
+    {
+-->     fputc((value >> (i * 8)) & 0xFF, file);
+    }
+}
+
+Values when execution stopped:
+
+bytes = 8
+i = 4
+value = 1569258541
+
+Function call traceback:
+
+WriteLittleEndian(file=0x615000000080, value=1569258541, bytes=8) called at line 96 of basin.c
+stage_1(out_filename="../long.tabi", in_filenames=0x7ffd77bb1480, num_in_filenames=3) called at line 56 of basin_main.c
+main(argc=6, argv=0x7ffd77bb1468)
+
 
 
 The correct 85 lines of output for this test were:
@@ -631,27 +627,36 @@ pathname           0x00000011    2e 2f 6c 6f 6e 67 5f 70  chr ./long_p
 
 The difference between your output(-) and the correct output(+) is:
 ...
-  num blocks         0x0000012a    01 00 00                 dec 1
-- hashes[0]          0x0000012d    2d fc 88 5d 6d 97 e0 03  chr -..]m...
-+ hashes[0]          0x0000012d    15 3c b6 1c e3 ad 3f 77  chr .<....?w
-  ============================= Record   2 ==============================
-  hashes[1]          0x0000014c    91 90 5c 46 fc 07 b3 93  chr ..\F....
-- hashes[2]          0x00000154    44 33 d3 7c d5 a9 92 f0  chr D3.|....
-+ hashes[2]          0x00000154    8c ec 01 86 4c dc 63 af  chr ....L.c.
-  $ hexdump -vC ../long.tabi
-  00000110  74 68 69 73 2f 70 61 74  68 2f 66 69 6e 61 6c 6c  |this/path/finall|
-- 00000120  79 5f 64 6f 6e 65 2e 74  78 74 01 00 00 2d fc 88  |y_done.txt...-..|
-?                                                   ^^^^  ^^                -
-
-+ 00000120  79 5f 64 6f 6e 65 2e 74  78 74 01 00 00 15 3c b6  |y_done.txt....<.|
-?                                                   ^^^^  ^^                 +
-
-- 00000130  5d 6d 97 e0 03 0a 00 65  6d 6f 6a 69 73 2e 74 78  |]m.....emojis.tx|
-+ 00000130  1c e3 ad 3f 77 0a 00 65  6d 6f 6a 69 73 2e 74 78  |...?w..emojis.tx|
-  00000140  74 03 00 00 90 30 e3 14  6e e7 0a 90 91 90 5c 46  |t....0..n.....\F|
-- 00000150  fc 07 b3 93 44 33 d3 7c  d5 a9 92 f0              |....D3.|....|
-+ 00000150  fc 07 b3 93 8c ec 01 86  4c dc 63 af              |........L.c.|
-  0000015c
+  $ ../../basin --stage-1 ../long.tabi empty ./long_path/this_is_a/very_long/sequence_of/nested/subdirectories/designed_to/check_whether/your_implementation/can_correctly/handle/long/path/names/.you/may/want/to/use/the/tab/key/if/you/are/typing/this/into/a/terminal/otherwise/you/can/just/copy/paste/this/path/finally_done.txt emojis.txt
+- *** error: the above command exited with return-code -13 and outputted the following to stderr:
+- 
+- Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+- Execution stopped in WriteLittleEndian(file=0x615000000080, value=1569258541, bytes=8) in basin.c at line 30:
+- 
+- {
+-     for (size_t i = 0; i < bytes; i++)
+-     {
+- -->     fputc((value >> (i * 8)) & 0xFF, file);
+-     }
+- }
+- 
+- Values when execution stopped:
+- 
+- bytes = 8
+- i = 4
+- value = 1569258541
+- 
+- Function call traceback:
+- 
+- WriteLittleEndian(file=0x615000000080, value=1569258541, bytes=8) called at line 96 of basin.c
+- stage_1(out_filename="../long.tabi", in_filenames=0x7ffd77bb1480, num_in_filenames=3) called at line 56 of basin_main.c
+- main(argc=6, argv=0x7ffd77bb1468)
+- 
+- 
++ $ 1521 basin-show ../long.tabi
++ Field name         Offset        Bytes                    ASCII/Numeric
++ -----------------------------------------------------------------------
++ magic              0x00000000    54 41 42 49              chr TABI
 
 The input for this test was:
 1521 basin-examples
@@ -662,26 +667,36 @@ cd aaa
 hexdump -vC ../long.tabi
 
 Test S1_7 (S1: just_short.tabi <- short.txt) - failed (Incorrect output)
-Your program produced these 19 lines of output:
+Your program produced these 29 lines of output:
 $ 1521 basin-examples
 $ cd examples
 $ cd aaa
 $ ../../basin --stage-1 ../just_short.tabi short.txt
-$ 1521 basin-show ../just_short.tabi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 41 42 49              chr TABI
-num records        0x00000004    01                       dec 1
-============================= Record   0 ==============================
-pathname len       0x00000005    09 00                    dec 9
-pathname           0x00000007    73 68 6f 72 74 2e 74 78  chr short.tx
-                   0x0000000f    74                       chr t
-num blocks         0x00000010    01 00 00                 dec 1
-hashes[0]          0x00000013    15 37 37 af 43 1b b2 48  chr .77.C..H
-$ hexdump -vC ../just_short.tabi
-00000000  54 41 42 49 01 09 00 73  68 6f 72 74 2e 74 78 74  |TABI...short.txt|
-00000010  01 00 00 15 37 37 af 43  1b b2 48                 |....77.C..H|
-0000001b
+*** error: the above command exited with return-code -13 and outputted the following to stderr:
+
+Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+Execution stopped in WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) in basin.c at line 30:
+
+{
+    for (size_t i = 0; i < bytes; i++)
+    {
+-->     fputc((value >> (i * 8)) & 0xFF, file);
+    }
+}
+
+Values when execution stopped:
+
+bytes = 8
+i = 4
+value = 2939631381
+
+Function call traceback:
+
+WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) called at line 96 of basin.c
+stage_1(out_filename="../just_short.tabi", in_filenames=0x7fffcd5d0b70, num_in_filenames=1) called at line 56 of basin_main.c
+main(argc=4, argv=0x7fffcd5d0b58)
+
+
 
 The correct 19 lines of output for this test were:
 $ 1521 basin-examples
@@ -706,14 +721,36 @@ $ hexdump -vC ../just_short.tabi
 
 The difference between your output(-) and the correct output(+) is:
 ...
-  num blocks         0x00000010    01 00 00                 dec 1
-- hashes[0]          0x00000013    15 37 37 af 43 1b b2 48  chr .77.C..H
+  $ ../../basin --stage-1 ../just_short.tabi short.txt
++ $ 1521 basin-show ../just_short.tabi
++ Field name         Offset        Bytes                    ASCII/Numeric
++ -----------------------------------------------------------------------
++ magic              0x00000000    54 41 42 49              chr TABI
++ num records        0x00000004    01                       dec 1
++ ============================= Record   0 ==============================
++ pathname len       0x00000005    09 00                    dec 9
++ pathname           0x00000007    73 68 6f 72 74 2e 74 78  chr short.tx
++                    0x0000000f    74                       chr t
++ num blocks         0x00000010    01 00 00                 dec 1
 + hashes[0]          0x00000013    15 b8 4c 98 fe c3 b7 d6  chr ..L.....
-  $ hexdump -vC ../just_short.tabi
-  00000000  54 41 42 49 01 09 00 73  68 6f 72 74 2e 74 78 74  |TABI...short.txt|
-- 00000010  01 00 00 15 37 37 af 43  1b b2 48                 |....77.C..H|
++ $ hexdump -vC ../just_short.tabi
++ 00000000  54 41 42 49 01 09 00 73  68 6f 72 74 2e 74 78 74  |TABI...short.txt|
 + 00000010  01 00 00 15 b8 4c 98 fe  c3 b7 d6                 |.....L.....|
-  0000001b
++ 0000001b
+- *** error: the above command exited with return-code -13 and outputted the following to stderr:
+- 
+- Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+- Execution stopped in WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) in basin.c at line 30:
+- 
+- {
+-     for (size_t i = 0; i < bytes; i++)
+-     {
+- -->     fputc((value >> (i * 8)) & 0xFF, file);
+-     }
+- }
+- 
+- Values when execution stopped:
+- 
 
 The input for this test was:
 1521 basin-examples
@@ -723,40 +760,37 @@ cd aaa
 1521 basin-show ../just_short.tabi
 hexdump -vC ../just_short.tabi
 
-Test S1_8 (S1: error handling: simple file not found) - failed (Incorrect output)
-Your program produced these 5 lines of output:
-$ 1521 basin-examples
-$ cd examples
-$ cd aaa
-$ ../../basin --stage-1 ../out.tabi this_does_not_exist
-*** error: the above command should have failed, but it exited with status 0
-
-The correct 5 lines of output for this test were:
-$ 1521 basin-examples
-$ cd examples
-$ cd aaa
-$ ../../basin --stage-1 ../out.tabi this_does_not_exist
-The above command failed successfully.
-
-The difference between your output(-) and the correct output(+) is:
-...
-  $ ../../basin --stage-1 ../out.tabi this_does_not_exist
-- *** error: the above command should have failed, but it exited with status 0
-+ The above command failed successfully.
-
-The input for this test was:
-1521 basin-examples
-cd examples
-cd aaa
-../../basin --stage-1 ../out.tabi this_does_not_exist # should fail
-
+Test S1_8 (S1: error handling: simple file not found) - passed
 Test S1_9 (S1: error handling: good files, then file not found) - failed (Incorrect output)
-Your program produced these 5 lines of output:
+Your program produced these 28 lines of output:
 $ 1521 basin-examples
 $ cd examples
 $ cd aaa
 $ ../../basin --stage-1 ../out.tabi empty short.txt this_does_not_exist
-*** error: the above command should have failed, but it exited with status 0
+*** error: the above command correctly failed, but it should have exited with return code 1 instead of -13. It outputted this to stderr: 
+Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+Execution stopped in WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) in basin.c at line 30:
+
+{
+    for (size_t i = 0; i < bytes; i++)
+    {
+-->     fputc((value >> (i * 8)) & 0xFF, file);
+    }
+}
+
+Values when execution stopped:
+
+bytes = 8
+i = 4
+value = 2939631381
+
+Function call traceback:
+
+WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) called at line 96 of basin.c
+stage_1(out_filename="../out.tabi", in_filenames=0x7ffe34627590, num_in_filenames=3) called at line 56 of basin_main.c
+main(argc=6, argv=0x7ffe34627578)
+
+
 
 The correct 5 lines of output for this test were:
 $ 1521 basin-examples
@@ -768,8 +802,31 @@ The above command failed successfully.
 The difference between your output(-) and the correct output(+) is:
 ...
   $ ../../basin --stage-1 ../out.tabi empty short.txt this_does_not_exist
-- *** error: the above command should have failed, but it exited with status 0
 + The above command failed successfully.
+- *** error: the above command correctly failed, but it should have exited with return code 1 instead of -13. It outputted this to stderr: 
+- Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+- Execution stopped in WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) in basin.c at line 30:
+- 
+- {
+-     for (size_t i = 0; i < bytes; i++)
+-     {
+- -->     fputc((value >> (i * 8)) & 0xFF, file);
+-     }
+- }
+- 
+- Values when execution stopped:
+- 
+- bytes = 8
+- i = 4
+- value = 2939631381
+- 
+- Function call traceback:
+- 
+- WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) called at line 96 of basin.c
+- stage_1(out_filename="../out.tabi", in_filenames=0x7ffe34627590, num_in_filenames=3) called at line 56 of basin_main.c
+- main(argc=6, argv=0x7ffe34627578)
+- 
+- 
 
 The input for this test was:
 1521 basin-examples
@@ -778,12 +835,35 @@ cd aaa
 ../../basin --stage-1 ../out.tabi empty short.txt this_does_not_exist # should fail
 
 Test S1_10 (S1: error handling: file exists but permission denied) - failed (Incorrect output)
-Your program produced these 5 lines of output:
+Your program produced these 28 lines of output:
 $ 1521 basin-examples
 $ cd examples
 $ cd aaa
 $ ../../basin --stage-1 ../out.tabi empty short.txt /proc/kcore
-*** error: the above command should have failed, but it exited with status 0
+*** error: the above command correctly failed, but it should have exited with return code 1 instead of -13. It outputted this to stderr: 
+Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+Execution stopped in WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) in basin.c at line 30:
+
+{
+    for (size_t i = 0; i < bytes; i++)
+    {
+-->     fputc((value >> (i * 8)) & 0xFF, file);
+    }
+}
+
+Values when execution stopped:
+
+bytes = 8
+i = 4
+value = 2939631381
+
+Function call traceback:
+
+WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) called at line 96 of basin.c
+stage_1(out_filename="../out.tabi", in_filenames=0x7ffdb5a26a30, num_in_filenames=3) called at line 56 of basin_main.c
+main(argc=6, argv=0x7ffdb5a26a18)
+
+
 
 The correct 5 lines of output for this test were:
 $ 1521 basin-examples
@@ -795,8 +875,31 @@ The above command failed successfully.
 The difference between your output(-) and the correct output(+) is:
 ...
   $ ../../basin --stage-1 ../out.tabi empty short.txt /proc/kcore
-- *** error: the above command should have failed, but it exited with status 0
 + The above command failed successfully.
+- *** error: the above command correctly failed, but it should have exited with return code 1 instead of -13. It outputted this to stderr: 
+- Runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+- Execution stopped in WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) in basin.c at line 30:
+- 
+- {
+-     for (size_t i = 0; i < bytes; i++)
+-     {
+- -->     fputc((value >> (i * 8)) & 0xFF, file);
+-     }
+- }
+- 
+- Values when execution stopped:
+- 
+- bytes = 8
+- i = 4
+- value = 2939631381
+- 
+- Function call traceback:
+- 
+- WriteLittleEndian(file=0x615000000080, value=2939631381, bytes=8) called at line 96 of basin.c
+- stage_1(out_filename="../out.tabi", in_filenames=0x7ffdb5a26a30, num_in_filenames=3) called at line 56 of basin_main.c
+- main(argc=6, argv=0x7ffdb5a26a18)
+- 
+- 
 
 The input for this test was:
 1521 basin-examples
@@ -804,5 +907,6 @@ cd examples
 cd aaa
 ../../basin --stage-1 ../out.tabi empty short.txt /proc/kcore # should fail
 
-1 tests passed 10 tests failed
+2 tests passed 9 tests failed
 Don't understand why test S1_1 failed?  Get AI-generated help by running: autotest-help
+z5450298@vx16:~/Desktop/basin$ 

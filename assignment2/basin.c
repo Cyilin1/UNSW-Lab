@@ -23,7 +23,7 @@
 
 // 辅助函数：将整数值按小端序写入文件
 
-void WriteLittleEndian(FILE *file, unsigned int value, size_t bytes)
+void WriteLittleEndian(FILE *file, uint64_t value, size_t bytes)
 {
     for (size_t i = 0; i < bytes; i++)
     {
@@ -60,7 +60,7 @@ void stage_1(char *out_filename, char *in_filenames[], size_t num_in_filenames)
         if (stat(in_filenames[i], &file_stat) != 0)
         {
             perror("无法获取文件大小");
-            continue;
+            exit(1);
         }
         size_t file_size = (size_t)file_stat.st_size;
 
@@ -81,19 +81,14 @@ void stage_1(char *out_filename, char *in_filenames[], size_t num_in_filenames)
         if (file == NULL)
         {
             perror("无法打开文件");
-            continue;
+            exit(1);
         }
         for (size_t j = 0; j < num_blocks; j++)
         {
             char block_data[256];
             size_t bytes_read = fread(block_data, 1, 256, file);
-            if (bytes_read < 256)
-            {
-                // 如果不足256字节，填充零
-                memset(block_data + bytes_read, 0, 256 - bytes_read);
-            }
-            unsigned long long block_hash = hash_block(block_data, 256); // 调用哈希函数
-            fwrite(&block_hash, 8, 1, tabi_file);
+            uint64_t block_hash = hash_block(block_data, bytes_read); // 调用哈希函数
+            WriteLittleEndian(tabi_file, block_hash, 8);
         }
         fclose(file);
     }

@@ -31,6 +31,16 @@ void WriteLittleEndian(FILE *file, uint64_t value, size_t bytes)
     }
 }
 
+uint64_t ReadLittleEndian(FILE *file, size_t bytes)
+{
+    uint64_t value = 0;
+    for (size_t i = 0; i < bytes; i++)
+    {
+        value |= ((uint64_t)fgetc(file) << (i * 8));
+    }
+    return value;
+}
+
 /// @brief Create a TABI file from an array of filenames.
 /// @param out_filename A path to where the new TABI file should be created.
 /// @param in_filenames An array of strings containing, in order, the files
@@ -105,17 +115,11 @@ void stage_1(char *out_filename, char *in_filenames[], size_t num_in_filenames)
 void stage_2(char *out_filename, char *in_filename)
 {
     FILE *tabi_file = fopen(in_filename, "rb");
-    if (tabi_file == NULL)
-    {
-        perror("Failed to open TABI file for reading");
-        exit(1);
-    }
-
     FILE *tbbi_file = fopen(out_filename, "wb");
-    if (tbbi_file == NULL)
+
+    if (!tabi_file || !tbbi_file)
     {
-        perror("Failed to create TBBI file");
-        fclose(tabi_file);
+        perror("Error opening files");
         exit(1);
     }
 
@@ -126,71 +130,42 @@ void stage_2(char *out_filename, char *in_filename)
     uint8_t num_records = (uint8_t)fgetc(tabi_file);
     fwrite(&num_records, 1, 1, tbbi_file);
 
-    // Initialize a buffer to read data from TABI file
-    uint16_t pathname_length;
-    char pathname[256];
-    uint32_t num_blocks;
-    uint64_t *hashes;
-
-    // Read and write records from TABI to TBBI
-    while (fread(&pathname_length, sizeof(uint16_t), 1, tabi_file) == 1)
+    // Process each record in the TABI file.
+    for (uint8_t record = 0; record < num_records; record++)
     {
-        fread(pathname, sizeof(char), pathname_length, tabi_file);
-        fread(&num_blocks, 3, 1, tabi_file);
+        uint16_t pathname_length = ReadLittleEndian(tabi_file, 2);
+        WriteLittleEndian(tbbi_file, pathname_length, 2);
 
-        // Calculate the number of match bytes needed
-        size_t num_match_bytes = (num_blocks + 7) / 8;
-
-        // Allocate memory for matches
-        uint8_t *matches = (uint8_t *)malloc(num_match_bytes);
-
-        // Ensure successful allocation
-        if (matches == NULL)
+        char pathname[pathname_length + 1];
+        if (fread(pathname, sizeof(char), pathname_length, tabi_file) != pathname_length)
         {
-            perror("Memory allocation error");
+            perror("Error reading pathname from TABI");
             exit(1);
         }
+        pathname[pathname_length] = '\0';
+        fwrite(pathname, 1, pathname_length, tbbi_file);
 
-        // Read hashes, compare them, and set corresponding match bits
-        hashes = (uint64_t *)malloc(num_blocks * sizeof(uint64_t));
-        fread(hashes, sizeof(uint64_t), num_blocks, tabi_file);
-        memset(matches, 0, num_match_bytes); // Initialize all match bytes to 0
+        uint64_t num_blocks = ReadLittleEndian(tabi_file, 3);
+        // if (fread(&num_blocks, 3, 1, tabi_file) != 1)
+        // {
+        //     perror("Error reading number of blocks from TABI");
+        //     exit(1);
+        // }
+        // printf("%llu", num_blocks);
+        WriteLittleEndian(tbbi_file, num_blocks, 3);
 
-        // Process the hashes and set match bits as needed
-        for (uint32_t i = 0; i < num_blocks; i++)
-        {
-            // You need to implement hash comparison logic here
-            // If the hashes match, set the corresponding match bit to 1
-        }
+        // Calculate the number of match bytes needed for this record.
+        uint32_t num_match_bytes = num_tbbi_match_bytes(num_blocks);
 
-        // Write the TBBI record
-        create_tbbi_record(tbbi_file, pathname, num_blocks, matches);
-
-        // Free memory used for matches and hashes
-        free(matches);
-        free(hashes);
+        // Initialize an array to store match bytes.
+        uint8_t match_bytes[num_match_bytes];
+        memset(match_bytes, 0, num_match_bytes);
+        fwrite(match_bytes, 1, 1, tbbi_file);
     }
 
-    // Close files
+    // Close the files.
     fclose(tabi_file);
     fclose(tbbi_file);
-}
-// Function to create a TBBI record based on the provided information
-void create_tbbi_record(FILE *tbbi_file, const char *pathname, uint32_t num_blocks, const uint8_t *matches)
-{
-    // Write the pathname length (16-bit little-endian)
-    uint16_t pathname_length = (uint16_t)strlen(pathname);
-    fwrite(&pathname_length, sizeof(uint16_t), 1, tbbi_file);
-
-    // Write the pathname
-    fwrite(pathname, sizeof(char), pathname_length, tbbi_file);
-
-    // Write the number of blocks (24-bit little-endian)
-    fwrite(&num_blocks, 3, 1, tbbi_file);
-
-    // Write the matches field
-    size_t num_match_bytes = (num_blocks + 7) / 8; // Calculate the number of match bytes needed
-    fwrite(matches, 1, num_match_bytes, tbbi_file);
 }
 
 /// @brief Create a TCBI file from a TBBI file.

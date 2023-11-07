@@ -126,6 +126,14 @@ void stage_2(char *out_filename, char *in_filename)
     // Write TBBI magic number (4 bytes)
     char *magic_value = "TBBI";
     fwrite(magic_value, 1, 4, tbbi_file);
+    // Read and check the magic number.
+    char magic[4];
+    if (fread(magic, 1, 4, tabi_file) != 4 || strncmp(magic, "TABI", 4) != 0)
+    {
+        perror("Error: Invalid magic number in TABI file");
+        exit(1);
+    }
+
     fseek(tabi_file, 4, SEEK_SET);
     uint8_t num_records = (uint8_t)fgetc(tabi_file);
     fwrite(&num_records, 1, 1, tbbi_file);
@@ -135,7 +143,6 @@ void stage_2(char *out_filename, char *in_filename)
     {
         uint16_t pathname_length = ReadLittleEndian(tabi_file, 2);
         WriteLittleEndian(tbbi_file, pathname_length, 2);
-
         char pathname[pathname_length + 1];
         if (fread(pathname, sizeof(char), pathname_length, tabi_file) != pathname_length)
         {
@@ -144,23 +151,49 @@ void stage_2(char *out_filename, char *in_filename)
         }
         pathname[pathname_length] = '\0';
         fwrite(pathname, 1, pathname_length, tbbi_file);
-
         uint64_t num_blocks = ReadLittleEndian(tabi_file, 3);
-        // if (fread(&num_blocks, 3, 1, tabi_file) != 1)
-        // {
-        //     perror("Error reading number of blocks from TABI");
-        //     exit(1);
-        // }
-        // printf("%llu", num_blocks);
         WriteLittleEndian(tbbi_file, num_blocks, 3);
-
-        // Calculate the number of match bytes needed for this record.
+        //  Calculate the number of match bytes needed for this record.
         uint32_t num_match_bytes = num_tbbi_match_bytes(num_blocks);
-
         // Initialize an array to store match bytes.
         uint8_t match_bytes[num_match_bytes];
         memset(match_bytes, 0, num_match_bytes);
-        fwrite(match_bytes, 1, 1, tbbi_file);
+        FILE *receive_file = fopen(pathname, "rb");
+        if (receive_file == NULL)
+        {
+            fwrite(match_bytes, 1, num_match_bytes, tbbi_file);
+            fseek(tabi_file, 8 * num_blocks, SEEK_CUR);
+            continue;
+        }
+        for (int i = 0; i < num_blocks; i++)
+        { // Use num_blocks here
+            char block_data[256];
+            size_t bytes_read = fread(block_data, 1, 256, receive_file);
+            uint64_t rev_block_hash = hash_block(block_data, bytes_read);
+            uint64_t sent_block_hash = ReadLittleEndian(tabi_file, 8);
+
+            if (rev_block_hash == sent_block_hash)
+            {
+                match_bytes[i / 8] |= (1 << (7 - (i % 8))); // Use | to set the bit, and adjust bit position.
+            }
+            else
+            {
+                // No need to do anything here; it's already initialized to 0.
+            }
+        }
+        fwrite(match_bytes, 1, num_match_bytes, tbbi_file);
+    }
+    // if (!feof(tabi_file))
+    // {
+    //     // There is extra data in the file, report an error
+    //     perror("");
+    //     exit(1);
+    // }
+    char temp;
+    if (fread(&temp, 1, 1, tabi_file) != 0)
+    {
+        fprintf(stderr, "Error: Extra data found in the TABI file");
+        exit(1);
     }
 
     // Close the files.

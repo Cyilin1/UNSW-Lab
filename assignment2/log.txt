@@ -1,964 +1,125 @@
-============================= Record   0 ==============================
-pathname len       0x00000005    14 00                    dec 20
-pathname           0x00000007    6c 69 74 74 6c 65 5f 65  chr little_e
-                   0x0000000f    6e 64 69 61 6e 5f 73 68  chr ndian_sh
-                   0x00000017    6f 72 74 73              chr orts
-num blocks         0x0000001b    02 01 00                 dec 258
-matches[0]         0x0000001e    00                       bin 00000000
-
-
-  Unexpected end of file when reading field: matches[1] (field size was 1 but could only read 0 bytes)
-*** error: the above command exited with return-code 1
-
-The correct 59 lines of output for this test were:
-/===================================================================
-| NOTE: this test uses bigger or more complicated files. If you're |
-|       failing other simpler tests for this subset, it's probably |
-|       easier to debug those first, before this one.              |
-===================================================================/
-$ 1521 basin-examples
-$ cd examples
-$ cd aaa
-$ ../../basin --stage-2 ../out.tbbi ../tabi/les.2.tabi
-$ 1521 basin-show ../out.tbbi
+z5450298@vx10:~/Desktop/basin$ 1092 basin-show examples/tbbi/invalid.5.tbbi
 Field name         Offset        Bytes                    ASCII/Numeric
 -----------------------------------------------------------------------
 magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    01                       dec 1
+num records        0x00000004    03                       dec 3
 ============================= Record   0 ==============================
-pathname len       0x00000005    14 00                    dec 20
-pathname           0x00000007    6c 69 74 74 6c 65 5f 65  chr little_e
-                   0x0000000f    6e 64 69 61 6e 5f 73 68  chr ndian_sh
-                   0x00000017    6f 72 74 73              chr orts
-num blocks         0x0000001b    02 01 00                 dec 258
-matches[0]         0x0000001e    80                       bin 10000000
-matches[1]         0x0000001f    40                       bin 01000000
-matches[2]         0x00000020    20                       bin 00100000
-matches[3]         0x00000021    10                       bin 00010000
-matches[4]         0x00000022    08                       bin 00001000
-matches[5]         0x00000023    04                       bin 00000100
-matches[6]         0x00000024    02                       bin 00000010
-matches[7]         0x00000025    01                       bin 00000001
-matches[8]         0x00000026    ff                       bin 11111111
-matches[9]         0x00000027    ff                       bin 11111111
-matches[10]        0x00000028    00                       bin 00000000
-matches[11]        0x00000029    aa                       bin 10101010
-...
-
-
-The difference between your output(-) and the correct output(+) is:
-...
-  num blocks         0x0000001b    02 01 00                 dec 258
-- matches[0]         0x0000001e    00                       bin 00000000
-?                                   -                                  -
-
-+ matches[0]         0x0000001e    80                       bin 10000000
-?                                  +                            +
-
-- 
-- 
--   Unexpected end of file when reading field: matches[1] (field size was 1 but could only read 0 bytes)
-- *** error: the above command exited with return-code 1
-+ matches[1]         0x0000001f    40                       bin 01000000
-+ matches[2]         0x00000020    20                       bin 00100000
-+ matches[3]         0x00000021    10                       bin 00010000
-+ matches[4]         0x00000022    08                       bin 00001000
-+ matches[5]         0x00000023    04                       bin 00000100
-+ matches[6]         0x00000024    02                       bin 00000010
-+ matches[7]         0x00000025    01                       bin 00000001
-+ matches[8]         0x00000026    ff                       bin 11111111
-+ matches[9]         0x00000027    ff                       bin 11111111
-+ matches[10]        0x00000028    00                       bin 00000000
-+ matches[11]        0x00000029    aa                       bin 10101010
-+ matches[12]        0x0000002a    55                       bin 01010101
-+ matches[13]        0x0000002b    db                       bin 11011011
-+ matches[14]        0x0000002c    6d                       bin 01101101
-+ matches[15]        0x0000002d    00                       bin 00000000
-+ matches[16]        0x0000002e    00                       bin 00000000
-+ matches[17]        0x0000002f    00                       bin 00000000
-+ matches[18]        0x00000030    00                       bin 00000000
-+ matches[19]        0x00000031    00                       bin 00000000
-+ matches[20]        0x00000032    ff                       bin 11111111
-+ matches[21]        0x00000033    ff                       bin 11111111
-
-The input for this test was:
-1521 basin-examples
-cd examples
-cd aaa
-../../basin --stage-2 ../out.tbbi ../tabi/les.2.tabi
-1521 basin-show ../out.tbbi
-hexdump -vC ../out.tbbi
-
-Test S2_10 (S2: little endian shorts: all modification) - failed (Incorrect output)
-Your program produced these 25 lines of output:
-/===================================================================
-| NOTE: this test uses bigger or more complicated files. If you're |
-|       failing other simpler tests for this subset, it's probably |
-|       easier to debug those first, before this one.              |
-===================================================================/
-$ 1521 basin-examples
-$ cd examples
-$ cd bbb
-$ ../../basin --stage-2 ../out.tbbi ../tabi/les.2.tabi
-$ 1521 basin-show ../out.tbbi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    01                       dec 1
-============================= Record   0 ==============================
-pathname len       0x00000005    14 00                    dec 20
-pathname           0x00000007    6c 69 74 74 6c 65 5f 65  chr little_e
-                   0x0000000f    6e 64 69 61 6e 5f 73 68  chr ndian_sh
-                   0x00000017    6f 72 74 73              chr orts
-num blocks         0x0000001b    02 01 00                 dec 258
-matches[0]         0x0000001e    00                       bin 00000000
-
-
-  Unexpected end of file when reading field: matches[1] (field size was 1 but could only read 0 bytes)
-*** error: the above command exited with return-code 1
-
-The correct 59 lines of output for this test were:
-/===================================================================
-| NOTE: this test uses bigger or more complicated files. If you're |
-|       failing other simpler tests for this subset, it's probably |
-|       easier to debug those first, before this one.              |
-===================================================================/
-$ 1521 basin-examples
-$ cd examples
-$ cd bbb
-$ ../../basin --stage-2 ../out.tbbi ../tabi/les.2.tabi
-$ 1521 basin-show ../out.tbbi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    01                       dec 1
-============================= Record   0 ==============================
-pathname len       0x00000005    14 00                    dec 20
-pathname           0x00000007    6c 69 74 74 6c 65 5f 65  chr little_e
-                   0x0000000f    6e 64 69 61 6e 5f 73 68  chr ndian_sh
-                   0x00000017    6f 72 74 73              chr orts
-num blocks         0x0000001b    02 01 00                 dec 258
-matches[0]         0x0000001e    00                       bin 00000000
-matches[1]         0x0000001f    00                       bin 00000000
-matches[2]         0x00000020    00                       bin 00000000
-matches[3]         0x00000021    00                       bin 00000000
-matches[4]         0x00000022    00                       bin 00000000
-matches[5]         0x00000023    00                       bin 00000000
-matches[6]         0x00000024    00                       bin 00000000
-matches[7]         0x00000025    00                       bin 00000000
-matches[8]         0x00000026    00                       bin 00000000
-matches[9]         0x00000027    00                       bin 00000000
-matches[10]        0x00000028    00                       bin 00000000
-matches[11]        0x00000029    00                       bin 00000000
-...
-
-
-The difference between your output(-) and the correct output(+) is:
-...
-  matches[0]         0x0000001e    00                       bin 00000000
-- 
-- 
--   Unexpected end of file when reading field: matches[1] (field size was 1 but could only read 0 bytes)
-- *** error: the above command exited with return-code 1
-+ matches[1]         0x0000001f    00                       bin 00000000
-+ matches[2]         0x00000020    00                       bin 00000000
-+ matches[3]         0x00000021    00                       bin 00000000
-+ matches[4]         0x00000022    00                       bin 00000000
-+ matches[5]         0x00000023    00                       bin 00000000
-+ matches[6]         0x00000024    00                       bin 00000000
-+ matches[7]         0x00000025    00                       bin 00000000
-+ matches[8]         0x00000026    00                       bin 00000000
-+ matches[9]         0x00000027    00                       bin 00000000
-+ matches[10]        0x00000028    00                       bin 00000000
-+ matches[11]        0x00000029    00                       bin 00000000
-+ matches[12]        0x0000002a    00                       bin 00000000
-+ matches[13]        0x0000002b    00                       bin 00000000
-+ matches[14]        0x0000002c    00                       bin 00000000
-+ matches[15]        0x0000002d    00                       bin 00000000
-+ matches[16]        0x0000002e    00                       bin 00000000
-+ matches[17]        0x0000002f    00                       bin 00000000
-+ matches[18]        0x00000030    00                       bin 00000000
-+ matches[19]        0x00000031    00                       bin 00000000
-+ matches[20]        0x00000032    00                       bin 00000000
-+ matches[21]        0x00000033    00                       bin 00000000
-+ matches[22]        0x00000034    00                       bin 00000000
-+ matches[23]        0x00000035    00                       bin 00000000
-+ matches[24]        0x00000036    00                       bin 00000000
-+ matches[25]        0x00000037    00                       bin 00000000
-
-The input for this test was:
-1521 basin-examples
-cd examples
-cd bbb
-../../basin --stage-2 ../out.tbbi ../tabi/les.2.tabi
-1521 basin-show ../out.tbbi
-hexdump -vC ../out.tbbi
-
-Test S2_11 (S2: rust_buzz: trailing extra block) - failed (Incorrect output)
-Your program produced these 19 lines of output:
-$ 1521 basin-examples
-$ cd examples
-$ cd bbb
-$ ../../basin --stage-2 ../out.tbbi ../tabi/rust_buzz.tabi
-$ 1521 basin-show ../out.tbbi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    01                       dec 1
-============================= Record   0 ==============================
-pathname len       0x00000005    0c 00                    dec 12
-pathname           0x00000007    66 69 7a 7a 2f 62 75 7a  chr fizz/buz
-                   0x0000000f    7a 2e 72 73              chr z.rs
-num blocks         0x00000013    01 00 00                 dec 1
-matches[0]         0x00000016    00                       bin 00000000
-$ hexdump -vC ../out.tbbi
-00000000  54 42 42 49 01 0c 00 66  69 7a 7a 2f 62 75 7a 7a  |TBBI...fizz/buzz|
-00000010  2e 72 73 01 00 00 00                              |.rs....|
-00000017
-
-The correct 19 lines of output for this test were:
-$ 1521 basin-examples
-$ cd examples
-$ cd bbb
-$ ../../basin --stage-2 ../out.tbbi ../tabi/rust_buzz.tabi
-$ 1521 basin-show ../out.tbbi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    01                       dec 1
-============================= Record   0 ==============================
-pathname len       0x00000005    0c 00                    dec 12
-pathname           0x00000007    66 69 7a 7a 2f 62 75 7a  chr fizz/buz
-                   0x0000000f    7a 2e 72 73              chr z.rs
-num blocks         0x00000013    01 00 00                 dec 1
-matches[0]         0x00000016    80                       bin 10000000
-$ hexdump -vC ../out.tbbi
-00000000  54 42 42 49 01 0c 00 66  69 7a 7a 2f 62 75 7a 7a  |TBBI...fizz/buzz|
-00000010  2e 72 73 01 00 00 80                              |.rs....|
-00000017
-
-The difference between your output(-) and the correct output(+) is:
-...
-  num blocks         0x00000013    01 00 00                 dec 1
-- matches[0]         0x00000016    00                       bin 00000000
-?                                   -                                  -
-
-+ matches[0]         0x00000016    80                       bin 10000000
-?                                  +                            +
-
-  00000000  54 42 42 49 01 0c 00 66  69 7a 7a 2f 62 75 7a 7a  |TBBI...fizz/buzz|
-- 00000010  2e 72 73 01 00 00 00                              |.rs....|
-?                              -
-
-+ 00000010  2e 72 73 01 00 00 80                              |.rs....|
-?                             +
-
-...
-
-The input for this test was:
-1521 basin-examples
-cd examples
-cd bbb
-../../basin --stage-2 ../out.tbbi ../tabi/rust_buzz.tabi
-1521 basin-show ../out.tbbi
-hexdump -vC ../out.tbbi
-
-Test S2_12 (S2: rust_buzz: trailing extra blocks) - failed (Incorrect output)
-Your program produced these 19 lines of output:
-$ 1521 basin-examples
-$ cd examples
-$ cd ccc
-$ ../../basin --stage-2 ../out.tbbi ../tabi/rust_buzz.tabi
-$ 1521 basin-show ../out.tbbi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    01                       dec 1
-============================= Record   0 ==============================
-pathname len       0x00000005    0c 00                    dec 12
-pathname           0x00000007    66 69 7a 7a 2f 62 75 7a  chr fizz/buz
-                   0x0000000f    7a 2e 72 73              chr z.rs
-num blocks         0x00000013    01 00 00                 dec 1
-matches[0]         0x00000016    00                       bin 00000000
-$ hexdump -vC ../out.tbbi
-00000000  54 42 42 49 01 0c 00 66  69 7a 7a 2f 62 75 7a 7a  |TBBI...fizz/buzz|
-00000010  2e 72 73 01 00 00 00                              |.rs....|
-00000017
-
-The correct 19 lines of output for this test were:
-$ 1521 basin-examples
-$ cd examples
-$ cd ccc
-$ ../../basin --stage-2 ../out.tbbi ../tabi/rust_buzz.tabi
-$ 1521 basin-show ../out.tbbi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    01                       dec 1
-============================= Record   0 ==============================
-pathname len       0x00000005    0c 00                    dec 12
-pathname           0x00000007    66 69 7a 7a 2f 62 75 7a  chr fizz/buz
-                   0x0000000f    7a 2e 72 73              chr z.rs
-num blocks         0x00000013    01 00 00                 dec 1
-matches[0]         0x00000016    80                       bin 10000000
-$ hexdump -vC ../out.tbbi
-00000000  54 42 42 49 01 0c 00 66  69 7a 7a 2f 62 75 7a 7a  |TBBI...fizz/buzz|
-00000010  2e 72 73 01 00 00 80                              |.rs....|
-00000017
-
-The difference between your output(-) and the correct output(+) is:
-...
-  num blocks         0x00000013    01 00 00                 dec 1
-- matches[0]         0x00000016    00                       bin 00000000
-?                                   -                                  -
-
-+ matches[0]         0x00000016    80                       bin 10000000
-?                                  +                            +
-
-  00000000  54 42 42 49 01 0c 00 66  69 7a 7a 2f 62 75 7a 7a  |TBBI...fizz/buzz|
-- 00000010  2e 72 73 01 00 00 00                              |.rs....|
-?                              -
-
-+ 00000010  2e 72 73 01 00 00 80                              |.rs....|
-?                             +
-
-...
-
-The input for this test was:
-1521 basin-examples
-cd examples
-cd ccc
-../../basin --stage-2 ../out.tbbi ../tabi/rust_buzz.tabi
-1521 basin-show ../out.tbbi
-hexdump -vC ../out.tbbi
-
-Test S2_13 (S2: everything: aaa) - failed (Incorrect output)
-Your program produced these 12 lines of output:
-/===================================================================
-| NOTE: this test uses bigger or more complicated files. If you're |
-|       failing other simpler tests for this subset, it's probably |
-|       easier to debug those first, before this one.              |
-===================================================================/
-$ 1521 basin-examples
-$ cd examples
-$ cd aaa
-$ ../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-*** error: the above command exited with return-code 1 and outputted the following to stderr:
-Error reading pathname from TABI: Success
-
-
-The correct 206 lines of output for this test were:
-/===================================================================
-| NOTE: this test uses bigger or more complicated files. If you're |
-|       failing other simpler tests for this subset, it's probably |
-|       easier to debug those first, before this one.              |
-===================================================================/
-$ 1521 basin-examples
-$ cd examples
-$ cd aaa
-$ ../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-$ 1521 basin-show ../out.tbbi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    0d                       dec 13
-============================= Record   0 ==============================
-pathname len       0x00000005    0c 00                    dec 12
-pathname           0x00000007    2e 2f 6c 79 72 69 63 73  chr ./lyrics
-                   0x0000000f    2e 74 78 74              chr .txt
-num blocks         0x00000013    29 00 00                 dec 41
-matches[0]         0x00000016    ff                       bin 11111111
-matches[1]         0x00000017    ff                       bin 11111111
-matches[2]         0x00000018    ff                       bin 11111111
-matches[3]         0x00000019    ff                       bin 11111111
-matches[4]         0x0000001a    ff                       bin 11111111
-matches[5]         0x0000001b    80                       bin 10000000
+pathname len       0x00000005    09 00                    dec 9
+pathname           0x00000007    73 68 6f 72 74 2e 74 78  chr short.tx
+                   0x0000000f    74                       chr t
+num blocks         0x00000010    01 00 00                 dec 1
+matches[0]         0x00000013    00                       bin 00000000
 ============================= Record   1 ==============================
-pathname len       0x0000001c    05 00                    dec 5
-pathname           0x0000001e    65 6d 70 74 79           chr empty
-num blocks         0x00000023    00 00 00                 dec 0
+pathname len       0x00000014    0a 00                    dec 10
+pathname           0x00000016    65 6d 6f 6a 69 73 2e 74  chr emojis.t
+                   0x0000001e    78 74                    chr xt
+num blocks         0x00000020    02 00 00                 dec 2
+matches[0]         0x00000023    a0                       bin 10100000
 ============================= Record   2 ==============================
-pathname len       0x00000026    0b 00                    dec 11
-pathname           0x00000028    66 72 61 63 74 61 6c 5f  chr fractal_
-...
-
-
-The difference between your output(-) and the correct output(+) is:
-...
-  $ ../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-- *** error: the above command exited with return-code 1 and outputted the following to stderr:
-- Error reading pathname from TABI: Success
-- 
-+ $ 1521 basin-show ../out.tbbi
-+ Field name         Offset        Bytes                    ASCII/Numeric
-+ -----------------------------------------------------------------------
-+ magic              0x00000000    54 42 42 49              chr TBBI
-+ num records        0x00000004    0d                       dec 13
-+ ============================= Record   0 ==============================
-+ pathname len       0x00000005    0c 00                    dec 12
-+ pathname           0x00000007    2e 2f 6c 79 72 69 63 73  chr ./lyrics
-+                    0x0000000f    2e 74 78 74              chr .txt
-+ num blocks         0x00000013    29 00 00                 dec 41
-+ matches[0]         0x00000016    ff                       bin 11111111
-+ matches[1]         0x00000017    ff                       bin 11111111
-+ matches[2]         0x00000018    ff                       bin 11111111
-+ matches[3]         0x00000019    ff                       bin 11111111
-+ matches[4]         0x0000001a    ff                       bin 11111111
-+ matches[5]         0x0000001b    80                       bin 10000000
-+ ============================= Record   1 ==============================
-+ pathname len       0x0000001c    05 00                    dec 5
-+ pathname           0x0000001e    65 6d 70 74 79           chr empty
-+ num blocks         0x00000023    00 00 00                 dec 0
-+ ============================= Record   2 ==============================
-+ pathname len       0x00000026    0b 00                    dec 11
-+ pathname           0x00000028    66 72 61 63 74 61 6c 5f  chr fractal_
-+                    0x00000030    62 69 6e                 chr bin
-+ num blocks         0x00000033    06 00 00                 dec 6
-+ matches[0]         0x00000036    fc                       bin 11111100
-
-The input for this test was:
-1521 basin-examples
-cd examples
-cd aaa
-../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-1521 basin-show ../out.tbbi
-hexdump -vC ../out.tbbi
-
-Test S2_14 (S2: everything: bbb) - failed (Incorrect output)
-Your program produced these 12 lines of output:
-/===================================================================
-| NOTE: this test uses bigger or more complicated files. If you're |
-|       failing other simpler tests for this subset, it's probably |
-|       easier to debug those first, before this one.              |
-===================================================================/
-$ 1521 basin-examples
-$ cd examples
-$ cd bbb
-$ ../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-*** error: the above command exited with return-code 1 and outputted the following to stderr:
-Error reading pathname from TABI: Success
-
-
-The correct 206 lines of output for this test were:
-/===================================================================
-| NOTE: this test uses bigger or more complicated files. If you're |
-|       failing other simpler tests for this subset, it's probably |
-|       easier to debug those first, before this one.              |
-===================================================================/
-$ 1521 basin-examples
-$ cd examples
-$ cd bbb
-$ ../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-$ 1521 basin-show ../out.tbbi
+pathname len       0x00000024    05 00                    dec 5
+pathname           0x00000026    65 6d 70 74 79           chr empty
+num blocks         0x0000002b    00 00 00                 dec 0
+z5450298@vx10:~/Desktop/basin$ 1092 basin-show examples/tbbi/invalid.4.tbbi
 Field name         Offset        Bytes                    ASCII/Numeric
 -----------------------------------------------------------------------
 magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    0d                       dec 13
+num records        0x00000004    03                       dec 3
 ============================= Record   0 ==============================
-pathname len       0x00000005    0c 00                    dec 12
-pathname           0x00000007    2e 2f 6c 79 72 69 63 73  chr ./lyrics
-                   0x0000000f    2e 74 78 74              chr .txt
-num blocks         0x00000013    29 00 00                 dec 41
-matches[0]         0x00000016    f8                       bin 11111000
-matches[1]         0x00000017    00                       bin 00000000
-matches[2]         0x00000018    00                       bin 00000000
-matches[3]         0x00000019    00                       bin 00000000
-matches[4]         0x0000001a    00                       bin 00000000
-matches[5]         0x0000001b    00                       bin 00000000
+pathname len       0x00000005    09 00                    dec 9
+pathname           0x00000007    73 68 6f 72 74 2e 74 78  chr short.tx
+                   0x0000000f    74                       chr t
+num blocks         0x00000010    01 00 00                 dec 1
+matches[0]         0x00000013    00                       bin 00000000
 ============================= Record   1 ==============================
-pathname len       0x0000001c    05 00                    dec 5
-pathname           0x0000001e    65 6d 70 74 79           chr empty
-num blocks         0x00000023    00 00 00                 dec 0
+pathname len       0x00000014    0a 00                    dec 10
+pathname           0x00000016    65 6d 6f 6a 69 73 2e 74  chr emojis.t
+                   0x0000001e    78 74                    chr xt
+num blocks         0x00000020    04 00 00                 dec 4
+matches[0]         0x00000023    a0                       bin 10100000
 ============================= Record   2 ==============================
-pathname len       0x00000026    0b 00                    dec 11
-pathname           0x00000028    66 72 61 63 74 61 6c 5f  chr fractal_
-...
-
-
-The difference between your output(-) and the correct output(+) is:
-...
-  $ ../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-- *** error: the above command exited with return-code 1 and outputted the following to stderr:
-- Error reading pathname from TABI: Success
-- 
-+ $ 1521 basin-show ../out.tbbi
-+ Field name         Offset        Bytes                    ASCII/Numeric
-+ -----------------------------------------------------------------------
-+ magic              0x00000000    54 42 42 49              chr TBBI
-+ num records        0x00000004    0d                       dec 13
-+ ============================= Record   0 ==============================
-+ pathname len       0x00000005    0c 00                    dec 12
-+ pathname           0x00000007    2e 2f 6c 79 72 69 63 73  chr ./lyrics
-+                    0x0000000f    2e 74 78 74              chr .txt
-+ num blocks         0x00000013    29 00 00                 dec 41
-+ matches[0]         0x00000016    f8                       bin 11111000
-+ matches[1]         0x00000017    00                       bin 00000000
-+ matches[2]         0x00000018    00                       bin 00000000
-+ matches[3]         0x00000019    00                       bin 00000000
-+ matches[4]         0x0000001a    00                       bin 00000000
-+ matches[5]         0x0000001b    00                       bin 00000000
-+ ============================= Record   1 ==============================
-+ pathname len       0x0000001c    05 00                    dec 5
-+ pathname           0x0000001e    65 6d 70 74 79           chr empty
-+ num blocks         0x00000023    00 00 00                 dec 0
-+ ============================= Record   2 ==============================
-+ pathname len       0x00000026    0b 00                    dec 11
-+ pathname           0x00000028    66 72 61 63 74 61 6c 5f  chr fractal_
-+                    0x00000030    62 69 6e                 chr bin
-+ num blocks         0x00000033    06 00 00                 dec 6
-+ matches[0]         0x00000036    fc                       bin 11111100
-
-The input for this test was:
-1521 basin-examples
-cd examples
-cd bbb
-../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-1521 basin-show ../out.tbbi
-hexdump -vC ../out.tbbi
-
-Test S2_15 (S2: everything: ccc) - failed (Incorrect output)
-Your program produced these 12 lines of output:
-/===================================================================
-| NOTE: this test uses bigger or more complicated files. If you're |
-|       failing other simpler tests for this subset, it's probably |
-|       easier to debug those first, before this one.              |
-===================================================================/
-$ 1521 basin-examples
-$ cd examples
-$ cd ccc
-$ ../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-*** error: the above command exited with return-code 1 and outputted the following to stderr:
-Error reading pathname from TABI: Success
-
-
-The correct 206 lines of output for this test were:
-/===================================================================
-| NOTE: this test uses bigger or more complicated files. If you're |
-|       failing other simpler tests for this subset, it's probably |
-|       easier to debug those first, before this one.              |
-===================================================================/
-$ 1521 basin-examples
-$ cd examples
-$ cd ccc
-$ ../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-$ 1521 basin-show ../out.tbbi
+pathname len       0x00000024    05 00                    dec 5
+pathname           0x00000026    65 6d 70 74 79           chr empty
+num blocks         0x0000002b    00 00 00                 dec 0
+z5450298@vx10:~/Desktop/basin$ 
+z5450298@vx10:~/Desktop/basin$ 1092 basin-show examples/tbbi/invalid.8.tbbi
 Field name         Offset        Bytes                    ASCII/Numeric
 -----------------------------------------------------------------------
 magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    0d                       dec 13
+num records        0x00000004    03                       dec 3
 ============================= Record   0 ==============================
-pathname len       0x00000005    0c 00                    dec 12
-pathname           0x00000007    2e 2f 6c 79 72 69 63 73  chr ./lyrics
-                   0x0000000f    2e 74 78 74              chr .txt
-num blocks         0x00000013    29 00 00                 dec 41
-matches[0]         0x00000016    00                       bin 00000000
-matches[1]         0x00000017    00                       bin 00000000
-matches[2]         0x00000018    00                       bin 00000000
-matches[3]         0x00000019    00                       bin 00000000
-matches[4]         0x0000001a    00                       bin 00000000
-matches[5]         0x0000001b    00                       bin 00000000
+pathname len       0x00000005    09 00                    dec 9
+pathname           0x00000007    73 68 6f 72 74 2e 74 78  chr short.tx
+                   0x0000000f    74                       chr t
+num blocks         0x00000010    01 00 00                 dec 1
+matches[0]         0x00000013    00                       bin 00000000
 ============================= Record   1 ==============================
-pathname len       0x0000001c    05 00                    dec 5
-pathname           0x0000001e    65 6d 70 74 79           chr empty
-num blocks         0x00000023    00 00 00                 dec 0
+pathname len       0x00000014    0a 00                    dec 10
+pathname           0x00000016    65 6d 6f 6a 69 73 2e 74  chr emojis.t
+                   0x0000001e    78 74                    chr xt
+num blocks         0x00000020    03 00 00                 dec 3
+matches[0]         0x00000023    b0                       bin 10110000
 ============================= Record   2 ==============================
-pathname len       0x00000026    0b 00                    dec 11
-pathname           0x00000028    66 72 61 63 74 61 6c 5f  chr fractal_
-...
-
-
-The difference between your output(-) and the correct output(+) is:
-...
-  $ ../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-- *** error: the above command exited with return-code 1 and outputted the following to stderr:
-- Error reading pathname from TABI: Success
-- 
-+ $ 1521 basin-show ../out.tbbi
-+ Field name         Offset        Bytes                    ASCII/Numeric
-+ -----------------------------------------------------------------------
-+ magic              0x00000000    54 42 42 49              chr TBBI
-+ num records        0x00000004    0d                       dec 13
-+ ============================= Record   0 ==============================
-+ pathname len       0x00000005    0c 00                    dec 12
-+ pathname           0x00000007    2e 2f 6c 79 72 69 63 73  chr ./lyrics
-+                    0x0000000f    2e 74 78 74              chr .txt
-+ num blocks         0x00000013    29 00 00                 dec 41
-+ matches[0]         0x00000016    00                       bin 00000000
-+ matches[1]         0x00000017    00                       bin 00000000
-+ matches[2]         0x00000018    00                       bin 00000000
-+ matches[3]         0x00000019    00                       bin 00000000
-+ matches[4]         0x0000001a    00                       bin 00000000
-+ matches[5]         0x0000001b    00                       bin 00000000
-+ ============================= Record   1 ==============================
-+ pathname len       0x0000001c    05 00                    dec 5
-+ pathname           0x0000001e    65 6d 70 74 79           chr empty
-+ num blocks         0x00000023    00 00 00                 dec 0
-+ ============================= Record   2 ==============================
-+ pathname len       0x00000026    0b 00                    dec 11
-+ pathname           0x00000028    66 72 61 63 74 61 6c 5f  chr fractal_
-+                    0x00000030    62 69 6e                 chr bin
-+ num blocks         0x00000033    06 00 00                 dec 6
-+ matches[0]         0x00000036    fc                       bin 11111100
-
-The input for this test was:
-1521 basin-examples
-cd examples
-cd ccc
-../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-1521 basin-show ../out.tbbi
-hexdump -vC ../out.tbbi
-
-Test S2_16 (S2: everything: bbb (fizz dir deleted)) - failed (Incorrect output)
-Your program produced these 13 lines of output:
-/===================================================================
-| NOTE: this test uses bigger or more complicated files. If you're |
-|       failing other simpler tests for this subset, it's probably |
-|       easier to debug those first, before this one.              |
-===================================================================/
-$ 1521 basin-examples
-$ cd examples
-$ cd bbb
-$ rm -r fizz
-$ ../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-*** error: the above command exited with return-code 1 and outputted the following to stderr:
-Error reading pathname from TABI: Success
-
-
-The correct 207 lines of output for this test were:
-/===================================================================
-| NOTE: this test uses bigger or more complicated files. If you're |
-|       failing other simpler tests for this subset, it's probably |
-|       easier to debug those first, before this one.              |
-===================================================================/
-$ 1521 basin-examples
-$ cd examples
-$ cd bbb
-$ rm -r fizz
-$ ../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-$ 1521 basin-show ../out.tbbi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    0d                       dec 13
-============================= Record   0 ==============================
-pathname len       0x00000005    0c 00                    dec 12
-pathname           0x00000007    2e 2f 6c 79 72 69 63 73  chr ./lyrics
-                   0x0000000f    2e 74 78 74              chr .txt
-num blocks         0x00000013    29 00 00                 dec 41
-matches[0]         0x00000016    f8                       bin 11111000
-matches[1]         0x00000017    00                       bin 00000000
-matches[2]         0x00000018    00                       bin 00000000
-matches[3]         0x00000019    00                       bin 00000000
-matches[4]         0x0000001a    00                       bin 00000000
-matches[5]         0x0000001b    00                       bin 00000000
-============================= Record   1 ==============================
-pathname len       0x0000001c    05 00                    dec 5
-pathname           0x0000001e    65 6d 70 74 79           chr empty
-num blocks         0x00000023    00 00 00                 dec 0
-============================= Record   2 ==============================
-pathname len       0x00000026    0b 00                    dec 11
-...
-
-
-The difference between your output(-) and the correct output(+) is:
-...
-  $ ../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-- *** error: the above command exited with return-code 1 and outputted the following to stderr:
-- Error reading pathname from TABI: Success
-- 
-+ $ 1521 basin-show ../out.tbbi
-+ Field name         Offset        Bytes                    ASCII/Numeric
-+ -----------------------------------------------------------------------
-+ magic              0x00000000    54 42 42 49              chr TBBI
-+ num records        0x00000004    0d                       dec 13
-+ ============================= Record   0 ==============================
-+ pathname len       0x00000005    0c 00                    dec 12
-+ pathname           0x00000007    2e 2f 6c 79 72 69 63 73  chr ./lyrics
-+                    0x0000000f    2e 74 78 74              chr .txt
-+ num blocks         0x00000013    29 00 00                 dec 41
-+ matches[0]         0x00000016    f8                       bin 11111000
-+ matches[1]         0x00000017    00                       bin 00000000
-+ matches[2]         0x00000018    00                       bin 00000000
-+ matches[3]         0x00000019    00                       bin 00000000
-+ matches[4]         0x0000001a    00                       bin 00000000
-+ matches[5]         0x0000001b    00                       bin 00000000
-+ ============================= Record   1 ==============================
-+ pathname len       0x0000001c    05 00                    dec 5
-+ pathname           0x0000001e    65 6d 70 74 79           chr empty
-+ num blocks         0x00000023    00 00 00                 dec 0
-+ ============================= Record   2 ==============================
-+ pathname len       0x00000026    0b 00                    dec 11
-+ pathname           0x00000028    66 72 61 63 74 61 6c 5f  chr fractal_
-+                    0x00000030    62 69 6e                 chr bin
-+ num blocks         0x00000033    06 00 00                 dec 6
-+ matches[0]         0x00000036    fc                       bin 11111100
-
-The input for this test was:
-1521 basin-examples
-cd examples
-cd bbb
-rm -r fizz
-../../basin --stage-2 ../out.tbbi ../tabi/everything.tabi
-1521 basin-show ../out.tbbi
-hexdump -vC ../out.tbbi
-
-Test S2_17 (S2: error handling: num records too big) - passed
-Test S2_18 (S2: error handling: num records too small) - passed
-Test S2_19 (S2: error handling: bad filename) - passed
-Test S2_20 (S2: error handling: bad num blocks) - passed
-Test S2_21 (S2: error handling: bad magic) - passed
-Test S2_22 (S2: error handling: input does not exist) - passed
-8 tests passed 15 tests failed
-Don't understand why test S2_0 failed?  Get AI-generated help by running: autotest-help
-z5450298@vx16:~/Desktop/basin$ 1092 autotest basin S2_9
+pathname len       0x00000024    05 00                    dec 5
+pathname           0x00000026    65 6d 70 74 79           chr empty
+num blocks         0x0000002b    00 00 00                 dec 0
+z5450298@vx10:~/Desktop/basin$ 
+z5450298@vx10:~/Desktop/basin$ 1092 autotest basin S3_16
 ./check_features_used.sh basin.c
 dcc --leak-check -o basin *.c # basin.c
-Test S2_9 (S2: little endian shorts: some modification) - failed (Incorrect output)
-Your program produced these 25 lines of output:
-/===================================================================
-| NOTE: this test uses bigger or more complicated files. If you're |
-|       failing other simpler tests for this subset, it's probably |
-|       easier to debug those first, before this one.              |
-===================================================================/
+basin.c:256:18: warning: incompatible pointer types passing 'char (*)[pathname_length + 1]' to parameter of type 'const char *' [-Wincompatible-pointer-types]
+        if (stat(&pathname, &file_stat) != 0)
+                 ^~~~~~~~~
+/usr/include/x86_64-linux-gnu/sys/stat.h:205:41: note: passing argument to parameter '__file' here
+extern int stat (const char *__restrict __file,
+                                        ^
+Don't understand?  Get AI-generated help by running: dcc-help
+Test S3_16 (S3: error handling: num blocks too high) - failed (Incorrect output)
+Your program produced these 5 lines of output:
 $ 1521 basin-examples
 $ cd examples
 $ cd aaa
-$ ../../basin --stage-2 ../out.tbbi ../tabi/les.2.tabi
-$ 1521 basin-show ../out.tbbi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    01                       dec 1
-============================= Record   0 ==============================
-pathname len       0x00000005    14 00                    dec 20
-pathname           0x00000007    6c 69 74 74 6c 65 5f 65  chr little_e
-                   0x0000000f    6e 64 69 61 6e 5f 73 68  chr ndian_sh
-                   0x00000017    6f 72 74 73              chr orts
-num blocks         0x0000001b    02 01 00                 dec 258
-matches[0]         0x0000001e    00                       bin 00000000
+$ ../../basin --stage-3 ../out.tcbi ../tbbi/invalid.4.tbbi
+*** error: the above command correctly failed, but it should have exited with return code 1 instead of -11
 
-
-  Unexpected end of file when reading field: matches[1] (field size was 1 but could only read 0 bytes)
-*** error: the above command exited with return-code 1
-
-The correct 59 lines of output for this test were:
-/===================================================================
-| NOTE: this test uses bigger or more complicated files. If you're |
-|       failing other simpler tests for this subset, it's probably |
-|       easier to debug those first, before this one.              |
-===================================================================/
+The correct 5 lines of output for this test were:
 $ 1521 basin-examples
 $ cd examples
 $ cd aaa
-$ ../../basin --stage-2 ../out.tbbi ../tabi/les.2.tabi
-$ 1521 basin-show ../out.tbbi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    01                       dec 1
-============================= Record   0 ==============================
-pathname len       0x00000005    14 00                    dec 20
-pathname           0x00000007    6c 69 74 74 6c 65 5f 65  chr little_e
-                   0x0000000f    6e 64 69 61 6e 5f 73 68  chr ndian_sh
-                   0x00000017    6f 72 74 73              chr orts
-num blocks         0x0000001b    02 01 00                 dec 258
-matches[0]         0x0000001e    80                       bin 10000000
-matches[1]         0x0000001f    40                       bin 01000000
-matches[2]         0x00000020    20                       bin 00100000
-matches[3]         0x00000021    10                       bin 00010000
-matches[4]         0x00000022    08                       bin 00001000
-matches[5]         0x00000023    04                       bin 00000100
-matches[6]         0x00000024    02                       bin 00000010
-matches[7]         0x00000025    01                       bin 00000001
-matches[8]         0x00000026    ff                       bin 11111111
-matches[9]         0x00000027    ff                       bin 11111111
-matches[10]        0x00000028    00                       bin 00000000
-matches[11]        0x00000029    aa                       bin 10101010
-...
-
+$ ../../basin --stage-3 ../out.tcbi ../tbbi/invalid.4.tbbi
+The above command failed successfully.
 
 The difference between your output(-) and the correct output(+) is:
 ...
-  num blocks         0x0000001b    02 01 00                 dec 258
-- matches[0]         0x0000001e    00                       bin 00000000
-?                                   -                                  -
-
-+ matches[0]         0x0000001e    80                       bin 10000000
-?                                  +                            +
-
-- 
-- 
--   Unexpected end of file when reading field: matches[1] (field size was 1 but could only read 0 bytes)
-- *** error: the above command exited with return-code 1
-+ matches[1]         0x0000001f    40                       bin 01000000
-+ matches[2]         0x00000020    20                       bin 00100000
-+ matches[3]         0x00000021    10                       bin 00010000
-+ matches[4]         0x00000022    08                       bin 00001000
-+ matches[5]         0x00000023    04                       bin 00000100
-+ matches[6]         0x00000024    02                       bin 00000010
-+ matches[7]         0x00000025    01                       bin 00000001
-+ matches[8]         0x00000026    ff                       bin 11111111
-+ matches[9]         0x00000027    ff                       bin 11111111
-+ matches[10]        0x00000028    00                       bin 00000000
-+ matches[11]        0x00000029    aa                       bin 10101010
-+ matches[12]        0x0000002a    55                       bin 01010101
-+ matches[13]        0x0000002b    db                       bin 11011011
-+ matches[14]        0x0000002c    6d                       bin 01101101
-+ matches[15]        0x0000002d    00                       bin 00000000
-+ matches[16]        0x0000002e    00                       bin 00000000
-+ matches[17]        0x0000002f    00                       bin 00000000
-+ matches[18]        0x00000030    00                       bin 00000000
-+ matches[19]        0x00000031    00                       bin 00000000
-+ matches[20]        0x00000032    ff                       bin 11111111
-+ matches[21]        0x00000033    ff                       bin 11111111
+  $ ../../basin --stage-3 ../out.tcbi ../tbbi/invalid.4.tbbi
+- *** error: the above command correctly failed, but it should have exited with return code 1 instead of -11
++ The above command failed successfully.
 
 The input for this test was:
 1521 basin-examples
 cd examples
 cd aaa
-../../basin --stage-2 ../out.tbbi ../tabi/les.2.tabi
-1521 basin-show ../out.tbbi
-hexdump -vC ../out.tbbi
+../../basin --stage-3 ../out.tcbi ../tbbi/invalid.4.tbbi # should fail
 
 0 tests passed 1 tests failed
-Don't understand why test S2_9 failed?  Get AI-generated help by running: autotest-help
-z5450298@vx16:~/Desktop/basin$ 1092 autotest-help basin S2_9
+Don't understand why test S3_16 failed?  Get AI-generated help by running: autotest-help
+z5450298@vx10:~/Desktop/basin$ 1092 autotest-help basin S3_16
 Here is an AI generated explanation. Be careful - it may be wrong!
 
-Looking at the provided C program, it seems that the issue is occurring in the stage_2 function. Specifically, there is a commented out section of code that reads the match bytes from the TABI file. This section should be uncommented and included in the code to correctly read and process the match bytes.
-To fix the issue, you can uncomment this section of code. This will ensure that the match bytes are correctly read from the TABI file and stored in the match_bytes array.
+From the given output, it seems that the program is crashing with a segmentation fault (-11) instead of exiting with a return code of 1, as expected.
 
-Once this fix is applied, the program should produce the expected output.
-z5450298@vx16:~/Desktop/basin$ 1092 autotest basin S2_9
-./check_features_used.sh basin.c
-dcc --leak-check -o basin *.c # basin.c
-Test S2_9 (S2: little endian shorts: some modification) - failed (Incorrect output)
-Your program produced these 25 lines of output:
-/===================================================================
-| NOTE: this test uses bigger or more complicated files. If you're |
-|       failing other simpler tests for this subset, it's probably |
-|       easier to debug those first, before this one.              |
-===================================================================/
-$ 1521 basin-examples
-$ cd examples
-$ cd aaa
-$ ../../basin --stage-2 ../out.tbbi ../tabi/les.2.tabi
-$ 1521 basin-show ../out.tbbi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    01                       dec 1
-============================= Record   0 ==============================
-pathname len       0x00000005    14 00                    dec 20
-pathname           0x00000007    6c 69 74 74 6c 65 5f 65  chr little_e
-                   0x0000000f    6e 64 69 61 6e 5f 73 68  chr ndian_sh
-                   0x00000017    6f 72 74 73              chr orts
-num blocks         0x0000001b    02 01 00                 dec 258
-matches[0]         0x0000001e    00                       bin 00000000
+A segmentation fault occurs when a program tries to access memory that it is not supposed to access, such as reading from or writing to an invalid memory address. This often happens when there are issues with memory allocation or when accessing arrays or pointers incorrectly.
 
+In the given code, there are a few potential causes for the segmentation fault:
 
-  Unexpected end of file when reading field: matches[1] (field size was 1 but could only read 0 bytes)
-*** error: the above command exited with return-code 1
+1. Memory allocation errors: There are multiple instances where dynamic memory allocation is used (e.g., malloc and realloc). If these memory allocations fail, the program will crash. It's possible that the memory allocation for the array variable in the stage_3 function is failing and causing the segmentation fault.
 
-The correct 59 lines of output for this test were:
-/===================================================================
-| NOTE: this test uses bigger or more complicated files. If you're |
-|       failing other simpler tests for this subset, it's probably |
-|       easier to debug those first, before this one.              |
-===================================================================/
-$ 1521 basin-examples
-$ cd examples
-$ cd aaa
-$ ../../basin --stage-2 ../out.tbbi ../tabi/les.2.tabi
-$ 1521 basin-show ../out.tbbi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    01                       dec 1
-============================= Record   0 ==============================
-pathname len       0x00000005    14 00                    dec 20
-pathname           0x00000007    6c 69 74 74 6c 65 5f 65  chr little_e
-                   0x0000000f    6e 64 69 61 6e 5f 73 68  chr ndian_sh
-                   0x00000017    6f 72 74 73              chr orts
-num blocks         0x0000001b    02 01 00                 dec 258
-matches[0]         0x0000001e    80                       bin 10000000
-matches[1]         0x0000001f    40                       bin 01000000
-matches[2]         0x00000020    20                       bin 00100000
-matches[3]         0x00000021    10                       bin 00010000
-matches[4]         0x00000022    08                       bin 00001000
-matches[5]         0x00000023    04                       bin 00000100
-matches[6]         0x00000024    02                       bin 00000010
-matches[7]         0x00000025    01                       bin 00000001
-matches[8]         0x00000026    ff                       bin 11111111
-matches[9]         0x00000027    ff                       bin 11111111
-matches[10]        0x00000028    00                       bin 00000000
-matches[11]        0x00000029    aa                       bin 10101010
-...
+2. Array or pointer access errors: There are several places where arrays or pointers are accessed in the code. If there are any errors with array indices or pointer arithmetic, it could lead to accessing invalid memory addresses and causing a segmentation fault.
 
+To fix the issue, you can:
 
-The difference between your output(-) and the correct output(+) is:
-...
-  num blocks         0x0000001b    02 01 00                 dec 258
-- matches[0]         0x0000001e    00                       bin 00000000
-?                                   -                                  -
+1. Check for memory allocation errors: Before using a dynamically allocated memory block, you should check if the memory allocation was successful. If the allocation fails, handle the error appropriately (e.g., print an error message and exit the program).
 
-+ matches[0]         0x0000001e    80                       bin 10000000
-?                                  +                            +
+2. Carefully review array and pointer access: Double-check the indices and calculations used to access arrays or manipulate pointers. Make sure they are within the correct bounds and not causing any out-of-bounds access.
 
-- 
-- 
--   Unexpected end of file when reading field: matches[1] (field size was 1 but could only read 0 bytes)
-- *** error: the above command exited with return-code 1
-+ matches[1]         0x0000001f    40                       bin 01000000
-+ matches[2]         0x00000020    20                       bin 00100000
-+ matches[3]         0x00000021    10                       bin 00010000
-+ matches[4]         0x00000022    08                       bin 00001000
-+ matches[5]         0x00000023    04                       bin 00000100
-+ matches[6]         0x00000024    02                       bin 00000010
-+ matches[7]         0x00000025    01                       bin 00000001
-+ matches[8]         0x00000026    ff                       bin 11111111
-+ matches[9]         0x00000027    ff                       bin 11111111
-+ matches[10]        0x00000028    00                       bin 00000000
-+ matches[11]        0x00000029    aa                       bin 10101010
-+ matches[12]        0x0000002a    55                       bin 01010101
-+ matches[13]        0x0000002b    db                       bin 11011011
-+ matches[14]        0x0000002c    6d                       bin 01101101
-+ matches[15]        0x0000002d    00                       bin 00000000
-+ matches[16]        0x0000002e    00                       bin 00000000
-+ matches[17]        0x0000002f    00                       bin 00000000
-+ matches[18]        0x00000030    00                       bin 00000000
-+ matches[19]        0x00000031    00                       bin 00000000
-+ matches[20]        0x00000032    ff                       bin 11111111
-+ matches[21]        0x00000033    ff                       bin 11111111
-
-The input for this test was:
-1521 basin-examples
-cd examples
-cd aaa
-../../basin --stage-2 ../out.tbbi ../tabi/les.2.tabi
-1521 basin-show ../out.tbbi
-hexdump -vC ../out.tbbi
-
-0 tests passed 1 tests failed
-Don't understand why test S2_9 failed?  Get AI-generated help by running: autotest-help
-z5450298@vx16:~/Desktop/basin$ 1092 autotest-help basin S2_9
-Here is an AI generated explanation. Be careful - it may be wrong!
-
-From the output, it seems that the program failed to read the matches field correctly. It encountered an unexpected end of file when reading the field. The program expected to read 1 byte for matches[1], but it could only read 0 bytes.
-
-This suggests that there might be an issue with how the program is reading the matches field from the input file. The error could be related to the size or position of the matches field within the file.
-
-To help you debug the issue, you can suggest the following steps:
-
-1. Have you carefully review the code that reads and writes the matches field. Make sure they understand how the field is structured and the expected size of each match byte.
-
-2. Ask you to double-check the logic for reading the matches field. Are the correct number of bytes being read? Is the file position being updated correctly after each read operation?
-
-3. It might be useful for you to print out debug information as they read the matches field. For example, they can print the number of bytes read and the value of each match byte to verify if they align with the expected values.
-
-4. If the issue persists, you should examine the input file (../out.tbbi) to check if the file structure matches the expected format. They can use a hex editor or a program like hexdump to inspect the binary content of the file. Compare the file structure with the expected output provided.
-
-5. You can also consider adding additional error handling and input validation to handle cases where the input file is not in the expected format. For example, they can check for the correct file size and handle cases where there are insufficient bytes available for reading.
-
-By following these steps, you should be able to identify and fix the issue with reading the matches field.
-z5450298@vx16:~/Desktop/basin$ 
+Additionally, it would be helpful to run the program using a debugger to identify the exact line of code where the segmentation fault occurs. This will provide more insights into the cause
+z5450298@vx10:~/Desktop/basin$ 

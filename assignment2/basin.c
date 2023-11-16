@@ -153,20 +153,26 @@ void stage_2(char *out_filename, char *in_filename)
         fwrite(pathname, 1, pathname_length, tbbi_file);
         uint64_t num_blocks = ReadLittleEndian(tabi_file, 3);
         WriteLittleEndian(tbbi_file, num_blocks, 3);
+
         //  Calculate the number of match bytes needed for this record.
         uint32_t num_match_bytes = num_tbbi_match_bytes(num_blocks);
         // Initialize an array to store match bytes.
         uint8_t match_bytes[num_match_bytes];
         memset(match_bytes, 0, num_match_bytes);
+        // open file
         FILE *receive_file = fopen(pathname, "rb");
+        // receiver doesn't receive file --> skip
         if (receive_file == NULL)
         {
             fwrite(match_bytes, 1, num_match_bytes, tbbi_file);
+            // skip all the hash value in tabi
             fseek(tabi_file, 8 * num_blocks, SEEK_CUR);
             continue;
         }
+
         for (int i = 0; i < num_blocks; i++)
-        { // Use num_blocks here
+        {
+            // temp to store data from tbbi(receiver)
             char block_data[256];
             size_t bytes_read = fread(block_data, 1, 256, receive_file);
             uint64_t rev_block_hash = hash_block(block_data, bytes_read);
@@ -174,25 +180,32 @@ void stage_2(char *out_filename, char *in_filename)
 
             if (rev_block_hash == sent_block_hash)
             {
+                // i=0,matched[0],
+                // 00000000
+                // 10000000
+                // 10000000
+
+                // i=1
+                // 10000000
+                // 01000000
+                // 11000000
                 match_bytes[i / 8] |= (1 << (7 - (i % 8))); // Use | to set the bit, and adjust bit position.
             }
             else
             {
+                // i=2
+                // 11000000
                 // No need to do anything here; it's already initialized to 0.
             }
         }
         fwrite(match_bytes, 1, num_match_bytes, tbbi_file);
     }
-    // if (!feof(tabi_file))
-    // {
-    //     // There is extra data in the file, report an error
-    //     perror("");
-    //     exit(1);
-    // }
+
+    // error handing : detect extra data in tabi
     char temp;
     if (fread(&temp, 1, 1, tabi_file) != 0)
     {
-        fprintf(stderr, "Error: Extra data found in the TABI file");
+        perror("Error: Extra data found in the TABI file");
         exit(1);
     }
 
@@ -241,7 +254,7 @@ void stage_3(char *out_filename, char *in_filename)
         char pathname[pathname_length + 1];
         if (fread(pathname, sizeof(char), pathname_length, tbbi_file) != pathname_length)
         {
-            perror("Error reading pathname from TABI");
+            perror("Error reading pathname from TBBI");
             exit(1);
         }
         printf("%s\n", pathname);
@@ -258,7 +271,7 @@ void stage_3(char *out_filename, char *in_filename)
         struct stat file_stat;
         if (stat(&pathname, &file_stat) != 0)
         {
-            perror("无法获取文件大小");
+            perror("cannot obtain the file information!");
             exit(1);
         }
         // write isDir
@@ -266,6 +279,10 @@ void stage_3(char *out_filename, char *in_filename)
         fwrite(&mode_isDIR, 1, 1, tcbi_file);
         // write Owner
         char mode_usr_pms[3];
+        // 400
+        // 111 111 111
+        // 100 000 000
+        // 100 000 000
         mode_usr_pms[0] = (file_stat.st_mode & S_IRUSR) ? 'r' : '-';
         mode_usr_pms[1] = (file_stat.st_mode & S_IWUSR) ? 'w' : '-';
         mode_usr_pms[2] = (file_stat.st_mode & S_IXUSR) ? 'x' : '-';
@@ -309,6 +326,9 @@ void stage_3(char *out_filename, char *in_filename)
             for (int k = 0; k < 8; k++)
             {
                 int index = i * 8 + k;
+                // 1010 0000
+                // 0100 0000
+                // 0000 0000
                 if ((match_byte & (1 << (7 - k))) == 0)
                 {
                     // 输出位置信息
@@ -334,6 +354,7 @@ void stage_3(char *out_filename, char *in_filename)
                     }
                     // printf("%d\n", index);
                 }
+                // error handing
                 else if (index + 1 > num_blocks)
                 {
                     perror("x");
@@ -382,9 +403,122 @@ void stage_3(char *out_filename, char *in_filename)
     fclose(tcbi_file);
 }
 
+// Field name         Offset        Bytes                    ASCII/Numeric
+// -----------------------------------------------------------------------
+// magic              0x00000000    54 43 42 49              chr TCBI
+// num records        0x00000004    02                       dec 2
+// ============================= Record   0 ==============================
+// pathname len       0x00000005    0a 00                    dec 10
+// pathname           0x00000007    65 6d 6f 6a 69 73 2e 74  chr emojis.t
+//                    0x0000000f    78 74                    chr xt
+// file type          0x00000011    2d                       chr -
+// owner perms        0x00000012    72 77 2d                 chr rw-
+// group perms        0x00000015    72 2d 2d                 chr r--
+// other perms        0x00000018    2d 2d 2d                 chr ---
+// file size          0x0000001b    01 02 00 00              dec 513
+// num updates        0x0000001f    01 00 00                 dec 1
+// (0) block num      0x00000022    01 00 00                 dec 1
+// (0) update len     0x00000025    00 01                    dec 256
+// (0) update data    0x00000027    54 68 65 20 73 65 63 6f  chr The seco
+//                    0x0000002f    6e 64 20 62 6c 6f 63 6b  chr nd block
+//                 [... omitted for brevity ...]
+//                    0x00000117    73 20 61 73 74 65 72 69  chr s asteri
+//                    0x0000011f    73 6b 20 2d 2d 3e 20 2a  chr sk --> *
+
 /// @brief Apply a TCBI file to the filesystem.
 /// @param in_filename A path to where the existing TCBI file is located.
 void stage_4(char *in_filename)
 {
-    // TODO: implement this.
+    // TODO: implement this
+    FILE *tcbi_file = fopen(in_filename, "rb");
+    if (!tcbi_file)
+    {
+        perror("Error opening files");
+        exit(1);
+    }
+
+    // Read and check the magic number.
+    char magic[4];
+    if (fread(magic, 1, 4, tcbi_file) != 4 || strncmp(magic, "TCBI", 4) != 0)
+    {
+        perror("Error: Invalid magic number in TCBI file");
+        exit(1);
+    }
+    uint8_t num_records = (uint8_t)fgetc(tcbi_file);
+
+    for (uint8_t record = 0; record < num_records; record++)
+    {
+        uint16_t pathname_length = ReadLittleEndian(tcbi_file, 2);
+        char pathname[pathname_length + 1];
+        if (fread(pathname, sizeof(char), pathname_length, tcbi_file) != pathname_length)
+        {
+            perror("Error reading pathname from TCBI");
+            exit(1);
+        }
+        pathname[pathname_length] = '\0';
+
+        char _fileType;
+        fread(&_fileType, 1, 1, tcbi_file);
+
+        char owner_perms[4];
+        char group_perms[4];
+        char other_perms[4];
+
+        fread(owner_perms, 1, 3, tcbi_file);
+        fread(group_perms, 1, 3, tcbi_file);
+        fread(other_perms, 1, 3, tcbi_file);
+        owner_perms[3] = '\0';
+        group_perms[3] = '\0';
+        other_perms[3] = '\0';
+
+        mode_t file_mode = 0; // 初始权限模式
+
+        // 解析权限字符并设置文件模式
+        if (owner_perms[0] == 'r')
+            file_mode |= S_IRUSR;
+        if (owner_perms[1] == 'w')
+            file_mode |= S_IWUSR;
+        if (owner_perms[2] == 'x')
+            file_mode |= S_IXUSR;
+
+        if (group_perms[0] == 'r')
+            file_mode |= S_IRGRP;
+        if (group_perms[1] == 'w')
+            file_mode |= S_IWGRP;
+        if (group_perms[2] == 'x')
+            file_mode |= S_IXGRP;
+
+        if (other_perms[0] == 'r')
+            file_mode |= S_IROTH;
+        if (other_perms[1] == 'w')
+            file_mode |= S_IWOTH;
+        if (other_perms[2] == 'x')
+            file_mode |= S_IXOTH;
+        FILE *receive_file = fopen(pathname, "wb+");
+
+        if (chmod(pathname, file_mode) != 0)
+        {
+            perror("xx"); // prints why the chmod failed
+            exit(1);
+        }
+        uint32_t _fileSize = ReadLittleEndian(tcbi_file, 4);
+        // fseek(tcbi_file, 14, SEEK_CUR);
+        uint32_t num_need_update = ReadLittleEndian(tcbi_file, 3);
+        printf("%u", num_need_update);
+        for (uint32_t i = 0; i < num_need_update; i++)
+        {
+            uint32_t _blockIndex = ReadLittleEndian(tcbi_file, 3);
+            uint16_t _updateLen = ReadLittleEndian(tcbi_file, 2);
+            fseek(receive_file, BLOCK_SIZE * _blockIndex, SEEK_SET);
+            char temp[_updateLen + 1];
+            if (fread(temp, 1, _updateLen, tcbi_file) != _updateLen)
+            {
+                perror("X");
+                exit(1);
+            }
+            temp[_updateLen] = '\0';
+            fwrite(temp, 1, _updateLen, receive_file);
+        }
+        fclose(receive_file);
+    }
 }

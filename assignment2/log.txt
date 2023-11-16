@@ -1,125 +1,71 @@
-z5450298@vx10:~/Desktop/basin$ 1092 basin-show examples/tbbi/invalid.5.tbbi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    03                       dec 3
-============================= Record   0 ==============================
-pathname len       0x00000005    09 00                    dec 9
-pathname           0x00000007    73 68 6f 72 74 2e 74 78  chr short.tx
-                   0x0000000f    74                       chr t
-num blocks         0x00000010    01 00 00                 dec 1
-matches[0]         0x00000013    00                       bin 00000000
-============================= Record   1 ==============================
-pathname len       0x00000014    0a 00                    dec 10
-pathname           0x00000016    65 6d 6f 6a 69 73 2e 74  chr emojis.t
-                   0x0000001e    78 74                    chr xt
-num blocks         0x00000020    02 00 00                 dec 2
-matches[0]         0x00000023    a0                       bin 10100000
-============================= Record   2 ==============================
-pathname len       0x00000024    05 00                    dec 5
-pathname           0x00000026    65 6d 70 74 79           chr empty
-num blocks         0x0000002b    00 00 00                 dec 0
-z5450298@vx10:~/Desktop/basin$ 1092 basin-show examples/tbbi/invalid.4.tbbi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    03                       dec 3
-============================= Record   0 ==============================
-pathname len       0x00000005    09 00                    dec 9
-pathname           0x00000007    73 68 6f 72 74 2e 74 78  chr short.tx
-                   0x0000000f    74                       chr t
-num blocks         0x00000010    01 00 00                 dec 1
-matches[0]         0x00000013    00                       bin 00000000
-============================= Record   1 ==============================
-pathname len       0x00000014    0a 00                    dec 10
-pathname           0x00000016    65 6d 6f 6a 69 73 2e 74  chr emojis.t
-                   0x0000001e    78 74                    chr xt
-num blocks         0x00000020    04 00 00                 dec 4
-matches[0]         0x00000023    a0                       bin 10100000
-============================= Record   2 ==============================
-pathname len       0x00000024    05 00                    dec 5
-pathname           0x00000026    65 6d 70 74 79           chr empty
-num blocks         0x0000002b    00 00 00                 dec 0
-z5450298@vx10:~/Desktop/basin$ 
-z5450298@vx10:~/Desktop/basin$ 1092 basin-show examples/tbbi/invalid.8.tbbi
-Field name         Offset        Bytes                    ASCII/Numeric
------------------------------------------------------------------------
-magic              0x00000000    54 42 42 49              chr TBBI
-num records        0x00000004    03                       dec 3
-============================= Record   0 ==============================
-pathname len       0x00000005    09 00                    dec 9
-pathname           0x00000007    73 68 6f 72 74 2e 74 78  chr short.tx
-                   0x0000000f    74                       chr t
-num blocks         0x00000010    01 00 00                 dec 1
-matches[0]         0x00000013    00                       bin 00000000
-============================= Record   1 ==============================
-pathname len       0x00000014    0a 00                    dec 10
-pathname           0x00000016    65 6d 6f 6a 69 73 2e 74  chr emojis.t
-                   0x0000001e    78 74                    chr xt
-num blocks         0x00000020    03 00 00                 dec 3
-matches[0]         0x00000023    b0                       bin 10110000
-============================= Record   2 ==============================
-pathname len       0x00000024    05 00                    dec 5
-pathname           0x00000026    65 6d 70 74 79           chr empty
-num blocks         0x0000002b    00 00 00                 dec 0
-z5450298@vx10:~/Desktop/basin$ 
-z5450298@vx10:~/Desktop/basin$ 1092 autotest basin S3_16
+z5450298@vx15:~/Desktop/basin$ 1092 autotest basin S4_0
 ./check_features_used.sh basin.c
 dcc --leak-check -o basin *.c # basin.c
-basin.c:256:18: warning: incompatible pointer types passing 'char (*)[pathname_length + 1]' to parameter of type 'const char *' [-Wincompatible-pointer-types]
+basin.c:272:18: warning: incompatible pointer types passing 'char (*)[pathname_length + 1]' to parameter of type 'const char *' [-Wincompatible-pointer-types]
         if (stat(&pathname, &file_stat) != 0)
                  ^~~~~~~~~
 /usr/include/x86_64-linux-gnu/sys/stat.h:205:41: note: passing argument to parameter '__file' here
 extern int stat (const char *__restrict __file,
                                         ^
+basin.c:499:18: warning: unused variable '_fileSize' [-Wunused-variable]
+        uint32_t _fileSize = ReadLittleEndian(tcbi_file, 4);
+                 ^
 Don't understand?  Get AI-generated help by running: dcc-help
-Test S3_16 (S3: error handling: num blocks too high) - failed (Incorrect output)
-Your program produced these 5 lines of output:
+Test S4_0 (S4: no updates) - failed (Incorrect output)
+Your program produced these 9 lines of output:
 $ 1521 basin-examples
 $ cd examples
 $ cd aaa
-$ ../../basin --stage-3 ../out.tcbi ../tbbi/invalid.4.tbbi
-*** error: the above command correctly failed, but it should have exited with return code 1 instead of -11
+$ ../../basin --stage-4 ../tcbi/aaa_short.tcbi
+$ 1521 basin-show --just-pathnames ../tcbi/aaa_short.tcbi | xargs ls -gGoU --time-style=+
+-rw-r----- 1 0  short.txt
+$ 1521 basin-show --just-pathnames ../tcbi/aaa_short.tcbi | xargs hexdump -vC
+$ 1521 basin-show --just-pathnames ../tcbi/aaa_short.tcbi | xargs sha256sum
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  short.txt
 
-The correct 5 lines of output for this test were:
+The correct 14 lines of output for this test were:
 $ 1521 basin-examples
 $ cd examples
 $ cd aaa
-$ ../../basin --stage-3 ../out.tcbi ../tbbi/invalid.4.tbbi
-The above command failed successfully.
+$ ../../basin --stage-4 ../tcbi/aaa_short.tcbi
+$ 1521 basin-show --just-pathnames ../tcbi/aaa_short.tcbi | xargs ls -gGoU --time-style=+
+-rw-r----- 1 64  short.txt
+$ 1521 basin-show --just-pathnames ../tcbi/aaa_short.tcbi | xargs hexdump -vC
+00000000  54 68 69 73 20 74 65 78  74 20 66 69 6c 65 20 68  |This text file h|
+00000010  61 73 20 73 69 78 74 79  20 66 6f 75 72 20 62 79  |as sixty four by|
+00000020  74 65 73 2c 20 74 77 65  6c 76 65 20 77 6f 72 64  |tes, twelve word|
+00000030  73 20 61 6e 64 20 6f 6e  65 20 6c 69 6e 65 2e 0a  |s and one line..|
+00000040
+$ 1521 basin-show --just-pathnames ../tcbi/aaa_short.tcbi | xargs sha256sum
+3dfe0f9cf2e20aece4bd95efe8f77e02b15daa7465bdd1ca63671fcb13dd1e1d  short.txt
 
 The difference between your output(-) and the correct output(+) is:
 ...
-  $ ../../basin --stage-3 ../out.tcbi ../tbbi/invalid.4.tbbi
-- *** error: the above command correctly failed, but it should have exited with return code 1 instead of -11
-+ The above command failed successfully.
+  $ 1521 basin-show --just-pathnames ../tcbi/aaa_short.tcbi | xargs ls -gGoU --time-style=+
+- -rw-r----- 1 0  short.txt
+?              ^
+
++ -rw-r----- 1 64  short.txt
+?              ^^
+
+  $ 1521 basin-show --just-pathnames ../tcbi/aaa_short.tcbi | xargs hexdump -vC
++ 00000000  54 68 69 73 20 74 65 78  74 20 66 69 6c 65 20 68  |This text file h|
++ 00000010  61 73 20 73 69 78 74 79  20 66 6f 75 72 20 62 79  |as sixty four by|
++ 00000020  74 65 73 2c 20 74 77 65  6c 76 65 20 77 6f 72 64  |tes, twelve word|
++ 00000030  73 20 61 6e 64 20 6f 6e  65 20 6c 69 6e 65 2e 0a  |s and one line..|
++ 00000040
+  $ 1521 basin-show --just-pathnames ../tcbi/aaa_short.tcbi | xargs sha256sum
+- e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  short.txt
++ 3dfe0f9cf2e20aece4bd95efe8f77e02b15daa7465bdd1ca63671fcb13dd1e1d  short.txt
 
 The input for this test was:
 1521 basin-examples
 cd examples
 cd aaa
-../../basin --stage-3 ../out.tcbi ../tbbi/invalid.4.tbbi # should fail
+../../basin --stage-4 ../tcbi/aaa_short.tcbi
+1521 basin-show --just-pathnames ../tcbi/aaa_short.tcbi | xargs ls -gGoU --time-style=+
+1521 basin-show --just-pathnames ../tcbi/aaa_short.tcbi | xargs hexdump -vC
+1521 basin-show --just-pathnames ../tcbi/aaa_short.tcbi | xargs sha256sum
 
 0 tests passed 1 tests failed
-Don't understand why test S3_16 failed?  Get AI-generated help by running: autotest-help
-z5450298@vx10:~/Desktop/basin$ 1092 autotest-help basin S3_16
-Here is an AI generated explanation. Be careful - it may be wrong!
-
-From the given output, it seems that the program is crashing with a segmentation fault (-11) instead of exiting with a return code of 1, as expected.
-
-A segmentation fault occurs when a program tries to access memory that it is not supposed to access, such as reading from or writing to an invalid memory address. This often happens when there are issues with memory allocation or when accessing arrays or pointers incorrectly.
-
-In the given code, there are a few potential causes for the segmentation fault:
-
-1. Memory allocation errors: There are multiple instances where dynamic memory allocation is used (e.g., malloc and realloc). If these memory allocations fail, the program will crash. It's possible that the memory allocation for the array variable in the stage_3 function is failing and causing the segmentation fault.
-
-2. Array or pointer access errors: There are several places where arrays or pointers are accessed in the code. If there are any errors with array indices or pointer arithmetic, it could lead to accessing invalid memory addresses and causing a segmentation fault.
-
-To fix the issue, you can:
-
-1. Check for memory allocation errors: Before using a dynamically allocated memory block, you should check if the memory allocation was successful. If the allocation fails, handle the error appropriately (e.g., print an error message and exit the program).
-
-2. Carefully review array and pointer access: Double-check the indices and calculations used to access arrays or manipulate pointers. Make sure they are within the correct bounds and not causing any out-of-bounds access.
-
-Additionally, it would be helpful to run the program using a debugger to identify the exact line of code where the segmentation fault occurs. This will provide more insights into the cause
-z5450298@vx10:~/Desktop/basin$ 
+z5450298@vx15:~/Desktop/basin$ 

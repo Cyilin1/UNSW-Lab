@@ -249,7 +249,7 @@ void stage_3(char *out_filename, char *in_filename)
     {
         // Read and process TBBI record.
         uint16_t pathname_length = ReadLittleEndian(tbbi_file, 2);
-        printf("%u\n", pathname_length);
+        printf("%u", pathname_length);
         WriteLittleEndian(tcbi_file, pathname_length, 2);
         char pathname[pathname_length + 1];
         if (fread(pathname, sizeof(char), pathname_length, tbbi_file) != pathname_length)
@@ -257,9 +257,9 @@ void stage_3(char *out_filename, char *in_filename)
             perror("Error reading pathname from TBBI");
             exit(1);
         }
-        printf("%s\n", pathname);
 
         pathname[pathname_length] = '\0';
+        printf("%s", pathname);
         fwrite(pathname, 1, pathname_length, tcbi_file);
         FILE *receive_file = fopen(pathname, "rb");
         if (receive_file == NULL)
@@ -379,7 +379,6 @@ void stage_3(char *out_filename, char *in_filename)
             {
                 update_data_len = file_size - 256 * (num_blocks - 1);
             }
-            // printf("%u\n", update_data_len);
             WriteLittleEndian(tcbi_file, update_data_len, 2);
 
             char update_data[update_data_len];
@@ -494,21 +493,30 @@ void stage_4(char *in_filename)
             file_mode |= S_IWOTH;
         if (other_perms[2] == 'x')
             file_mode |= S_IXOTH;
-        FILE *receive_file = fopen(pathname, "wb+");
-
+        FILE *receive_file;
+        if (access(pathname, F_OK) == 0)
+        {
+            receive_file = fopen(pathname, "r+");
+        }
+        else
+        {
+            receive_file = fopen(pathname, "w+");
+        }
         if (chmod(pathname, file_mode) != 0)
         {
-            perror("xx"); // prints why the chmod failed
+            perror("x1x"); // prints why the chmod failed
             exit(1);
         }
         uint32_t _fileSize = ReadLittleEndian(tcbi_file, 4);
         // fseek(tcbi_file, 14, SEEK_CUR);
+        truncate(pathname, _fileSize);
         uint32_t num_need_update = ReadLittleEndian(tcbi_file, 3);
-        printf("%u", num_need_update);
+
         for (uint32_t i = 0; i < num_need_update; i++)
         {
             uint32_t _blockIndex = ReadLittleEndian(tcbi_file, 3);
             uint16_t _updateLen = ReadLittleEndian(tcbi_file, 2);
+
             fseek(receive_file, BLOCK_SIZE * _blockIndex, SEEK_SET);
             char temp[_updateLen + 1];
             if (fread(temp, 1, _updateLen, tcbi_file) != _updateLen)
@@ -517,8 +525,16 @@ void stage_4(char *in_filename)
                 exit(1);
             }
             temp[_updateLen] = '\0';
+            // printf("%s\n", temp);
             fwrite(temp, 1, _updateLen, receive_file);
         }
         fclose(receive_file);
     }
+    char temp;
+    if (fread(&temp, 1, 1, tcbi_file) != 0)
+    {
+        fprintf(stderr, "Error: Extra data found in the TABI file");
+        exit(1);
+    }
+    fclose(tcbi_file);
 }
